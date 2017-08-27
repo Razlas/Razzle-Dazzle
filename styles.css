@@ -1,0 +1,74 @@
+body {
+	font-family: helvetica;
+	background-color: #EEEEEE;
+	margin: 40px auto;
+	padding: 20px 50px;
+	line-height: 1.4;
+	font: 18px;
+	text-align: center;
+	max-width: 1000px;
+}
+
+p::selection, h1::selection {
+	background: silver;
+}
+
+a, a.element {
+	background-color: #EEEEEE;
+	font-style: oblique;
+	text-decoration: none;
+	color: black;
+	border: 1px solid grey;
+	padding: 10px;
+	transition: 0.5s;
+}
+
+a.buy:hover, a.sell:hover, #contButton:hover {
+	background-color: gray;
+	color: white;
+	transition: 0.5s;
+}
+
+#hiddenDiv {
+	display: none;
+}
+
+#body {
+	border: 2px solid black;
+	height: 1000px;
+}
+
+a.element {
+	display: block;
+	color: black;
+	padding: 8px 16px;
+	text-decoration: none;
+}
+
+a.buy, a.sell {
+	display: block;
+	color: black;
+	padding: 8px 16px;
+	text-decoration: none;
+}
+
+table {
+	/*align: right;*/
+	border-collapse: collapse;
+	background-color: lightgrey;
+}
+
+
+td, th {
+	padding: 5px;
+}
+
+table, th, td {
+	text-align: center;
+	border: 1px solid black;
+}
+
+#hidden, #e2, #e3, #e4 {
+	display: none;
+}
+
