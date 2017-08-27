@@ -1,11 +1,20 @@
-var contButton = document.getElementById('contButton');
+var continueButton = document.getElementById('continue');
 var intro = document.getElementById('intro');
 var hiddenDiv = document.getElementById('hiddenDiv');
 
-var elemOne = document.getElementById('elem1');
-var elemTwo = document.getElementById('elem2');
+var elemOne   = document.getElementById('elem1');
+var elemTwo   = document.getElementById('elem2');
 var elemThree = document.getElementById('elem3');
-var elemFour = document.getElementById('elem4');
+var elemFour  = document.getElementById('elem4');
+
+var e1buy  = document.getElementById('e1buy');
+var e1sell = document.getElementById('e1sell');
+var e2buy  = document.getElementById('e2buy');
+var e2sell = document.getElementById('e2sell');
+var e3buy  = document.getElementById('e3buy');
+var e3sell = document.getElementById('e3sell');
+var e4buy  = document.getElementById('e4buy');
+var e4sell = document.getElementById('e4sell');
 
 var tr2 = document.getElementById('e2');
 var tr3 = document.getElementById('e3');
@@ -13,6 +22,7 @@ var tr4 = document.getElementById('e4');
 
 var prices = ['10', '50', '100', '200'];
 var money = 100000;
+
 
 class Elem { 
 	constructor(name, cost, costScale) {
@@ -34,7 +44,7 @@ class Elem {
 			this.setNewPrice();
 			update();
 		} else if(this.quantity < this.cost) {
-			alert("You don't have enough money to do that.")
+			alert("You don't have enough money to do that.");
 		}
 	}
 
@@ -56,7 +66,6 @@ let firstElement = new Elem("Test", prices[0], 1.1);
 let secondElement = new Elem("Test2", prices[1], 1.1);
 let thirdElement = new Elem("Test3", prices[2], 1.1);
 let fourthElement = new Elem("Test4", prices[3], 1.1);
-
 
 function update() {
 	var m =  "Money: " + money;
@@ -110,15 +119,3 @@ e3sell.onclick = function() {thirdElement.sell();}
 
 e4buy.onclick = function() {fourthElement.buy();}
 e4sell.onclick = function() {fourthElement.sell();}
-
-contButton.onclick = function() {
-	intro.style.display = "none";
-	hiddenDiv.style.display = "block";
-	contButton.style.display = "none";
-}
-
-contButton.onclick = function() {
-	intro.style.display = "none";
-	hiddenDiv.style.display = "block";
-	contButton.style.display = "none";
-}

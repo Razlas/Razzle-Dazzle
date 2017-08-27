@@ -23,14 +23,10 @@ a, a.element {
 	transition: 0.5s;
 }
 
-a.buy:hover, a.sell:hover, #contButton:hover {
+a.buy:hover, a.sell:hover, #continue:hover, #razzle:hover, #dazzle:hover {
 	background-color: gray;
 	color: white;
 	transition: 0.5s;
-}
-
-#hiddenDiv {
-	display: none;
 }
 
 #body {
@@ -68,7 +64,7 @@ table, th, td {
 	border: 1px solid black;
 }
 
-#hidden, #e2, #e3, #e4 {
+#hiddenDiv, #hidden, #e2, #e3, #e4 {
 	display: none;
 }
 
