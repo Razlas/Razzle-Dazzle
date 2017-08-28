@@ -20,59 +20,92 @@ var tr2 = document.getElementById('e2');
 var tr3 = document.getElementById('e3');
 var tr4 = document.getElementById('e4');
 
-var prices = ['10', '50', '100', '200'];
-var money = 100000;
+var goldMiner = setInterval(goldMiner, 5000);
 
 
-class Elem { 
-	constructor(name, cost, costScale) {
-		this.name = name;
-		this.initialCost = cost;
-		this.costScale = costScale;
-		this.quantity = 0;
-		this.cost = cost;
-	}
+var names = ['Gold Miner', 'TestWorker2', 'TestWorker3', 'TestWorker4'];
+var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
+var resAmounts = [1000, 1000, 1000, 1000, 1000];
 
-	setNewPrice() {
-		this.cost = Math.floor(this.initialCost * (Math.pow(this.costScale, this.quantity)));
+
+class Elem {
+	constructor(name, goldC, woodC, stoneC, metalC, cropC) {
+		this.name   	= name;
+		this.cost 		= [goldC, woodC, stoneC, metalC, cropC];
+		this.quantity 	= 0;
+		this.subject 	= subject;
+		this.affect 	= this.affect;
 	}
 
 	buy() {
-		if(money >= this.cost) {
-			money -= this.cost;
+		var canBuy = true;
+		var missing = " ";
+		var numInvalid = 0;
+		for(var i=0; i < this.cost.length; i++) {
+			if(resAmounts[i]<this.cost[i]) {
+				canBuy = false;
+				numInvalid++;
+				missing = missing + resources[i] + ", ";
+			}
+		}
+
+		if(canBuy) {
 			this.quantity+=1;
-			this.setNewPrice();
+			for(var i = 0; i < this.cost.length; i++) {
+				resAmounts[i] -= this.cost[i];
+			}
 			update();
-		} else if(this.quantity < this.cost) {
-			alert("You don't have enough money to do that.");
+		} else {
+			missing = missing.substring(0, missing.length - 2);
+			// if(missing > 1) {
+			// 	missing = missing.substr(0, missing.lastIndexOf(',') - 1) + " or " + missing.substr(missing.lastIndexOf(',' + 1), missing.length);)
+			// }
+			alert("You do not have enough" + missing);
 		}
 	}
 
 	sell() {
 		if(this.quantity > 0) {
 			this.quantity -= 1;
-			money += Math.floor(this.cost/2);
-			this.setNewPrice();
+			for(var i=0; i < this.cost.length;i++) {
+				resAmounts[i]+=Math.floor(this.cost[i]/2);
+			}
 			update();
 		}
 	}
 
+	getCost() {
+		return this.cost;
+	}
+
 	getQuantity() {return this.quantity;}
-	getCost() {return this.cost;}
 	getName() {return this.name;}
 }
 
-let firstElement = new Elem("Test", prices[0], 1.1); 
-let secondElement = new Elem("Test2", prices[1], 1.1);
-let thirdElement = new Elem("Test3", prices[2], 1.1);
-let fourthElement = new Elem("Test4", prices[3], 1.1);
+let firstElement = new Elem(names[0], 10, 10, 10, 10, 5); 
+let secondElement = new Elem(names[1], 50, 50, 50, 50, 25);
+let thirdElement = new Elem(names[2], 100, 100, 100, 100, 50);
+let fourthElement = new Elem(names[3], 200, 200, 200, 200, 100);
 
 function update() {
-	var m =  "Money: " + money;
+	var g = resources[0] + ": " + resAmounts[0];
+	var w = resources[1] + ": " + resAmounts[1];
+	var s = resources[2] + ": " + resAmounts[2];
+	var m = resources[3] + ": " + resAmounts[3];
+	var c = resources[4] + ": " + resAmounts[4];
 	
 	showElements();
 
-	document.getElementById('money').innerHTML = m;
+	document.getElementById('gold').innerHTML = g;
+	document.getElementById('wood').innerHTML = w;
+	document.getElementById('stone').innerHTML = s;
+	document.getElementById('metal').innerHTML = m;
+	document.getElementById('crop').innerHTML = c;
+
+	document.getElementById('elem1').innerHTML = firstElement.getName();
+	document.getElementById('elem2').innerHTML = secondElement.getName();
+	document.getElementById('elem3').innerHTML = thirdElement.getName();
+	document.getElementById('elem4').innerHTML = fourthElement.getName();
 
 	document.getElementById('e1q').innerHTML = firstElement.getQuantity();
 	document.getElementById('e2q').innerHTML = secondElement.getQuantity();
@@ -84,10 +117,10 @@ function update() {
 	document.getElementById('e3buy').innerHTML = thirdElement.getCost();
 	document.getElementById('e4buy').innerHTML = fourthElement.getCost();
 
-	document.getElementById('e1sell').innerHTML = Math.floor(firstElement.getCost()/2);
-	document.getElementById('e2sell').innerHTML = Math.floor(secondElement.getCost()/2);
-	document.getElementById('e3sell').innerHTML = Math.floor(thirdElement.getCost()/2);
-	document.getElementById('e4sell').innerHTML = Math.floor(fourthElement.getCost()/2);
+	document.getElementById('e1sell').innerHTML = Math.floor(firstElement.getCost()[0]/2) + "," + Math.floor(firstElement.getCost()[1]/2) + "," + Math.floor(firstElement.getCost()[2]/2) + "," + Math.floor(firstElement.getCost()[3]/2) + "," + Math.floor(firstElement.getCost()[4]/2);
+	document.getElementById('e2sell').innerHTML = Math.floor(secondElement.getCost()[0]/2) + "," + Math.floor(secondElement.getCost()[1]/2) + "," + Math.floor(secondElement.getCost()[2]/2) + "," + Math.floor(secondElement.getCost()[3]/2) + "," + Math.floor(secondElement.getCost()[4]/2);
+	document.getElementById('e3sell').innerHTML = Math.floor(thirdElement.getCost()[0]/2) + "," + Math.floor(thirdElement.getCost()[1]/2) + "," + Math.floor(thirdElement.getCost()[2]/2) + "," + Math.floor(thirdElement.getCost()[3]/2) + "," + Math.floor(thirdElement.getCost()[4]/2);
+	document.getElementById('e4sell').innerHTML = Math.floor(fourthElement.getCost()[0]/2) + "," + Math.floor(fourthElement.getCost()[1]/2) + "," + Math.floor(fourthElement.getCost()[2]/2) + "," + Math.floor(fourthElement.getCost()[3]/2) + "," + Math.floor(fourthElement.getCost()[4]/2);
 }
 
 function showElements() {
@@ -106,16 +139,36 @@ function showElements() {
 
 window.onload = function() {
 	update();
+
 }
 
-e1buy.onclick = function() {firstElement.buy();}
+function goldMiner() {
+	resAmounts[0] += firstElement.getQuantity()*2;
+	resAmounts[5] -= firstElement.getQuantity();
+	update();
+}
+
+
+e1buy.onclick  = function() {firstElement.buy();}
 e1sell.onclick = function() {firstElement.sell();}
 
-e2buy.onclick = function() {secondElement.buy();}
+e2buy.onclick  = function() {secondElement.buy();}
 e2sell.onclick = function() {secondElement.sell();}
 
-e3buy.onclick = function() {thirdElement.buy();}
+e3buy.onclick  = function() {thirdElement.buy();}
 e3sell.onclick = function() {thirdElement.sell();}
 
-e4buy.onclick = function() {fourthElement.buy();}
+e4buy.onclick  = function() {fourthElement.buy();}
 e4sell.onclick = function() {fourthElement.sell();}
+
+function openTab(tabGroup, tabName) {
+	var i, tabContent, tabLinks;
+
+	tabContent = document.getElementsByClassName(tabGroup);
+	for(i = 0; i < tabContent.length; i++) {
+		tabContent[i].style.display = "none";
+	}
+
+	document.getElementById(tabName).style.display = "block";
+}
+

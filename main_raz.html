@@ -7,53 +7,107 @@
 	
 	<body>
 		<h1><u>The Life of Raz El</u></h1>
-		<p id="money"></p>
 		
-		<div id="body">
-
-		<table id="elements">
-			<colgroup>
-				<col width="125">
-				<col width="60">
-				<col width="85">
-				<col width="85">
-			</colgroup>
-			<tr>
-				<th>Name</th>
-				<th>#</th>
-				<th>Buy</th>
-				<th>Sell</th>
-			</tr>
-
-			<tr id="e1">
-				<td><a class="element" id="elem1">Elem #1</a></td>
-				<td><a id="e1q"></a></td>
-				<td><a class="buy" id="e1buy" href="#">Buy</a></td>
-				<td><a class="sell" id="e1sell" href="#">Sell</a></td>
-			</tr>
-
-			<tr id="e2">
-				<td><a class="element" id="elem2">Elem #2</a></td>
-				<td><a id="e2q"></a></td>
-				<td><a class="buy" id="e2buy" href="#">Buy</a></td>
-				<td><a class="sell" id="e2sell" href="#">Sell</a></td>
-			</tr>
-
-			<tr id="e3">
-				<td><a class="element" id="elem3">Elem #3</a></td>
-				<td><a id="e3q"></a></td>
-				<td><a class="buy" id="e3buy" href="#">Buy</a></td>
-				<td><a class="sell" id="e3sell" href="#">Sell</a></td>
-			</tr>
-
-			<tr id="e4">
-				<td><a class="element" id="elem4">Elem #4</a></td>
-				<td><a id="e4q"></a></td>
-				<td><a class="buy" id="e4buy" href="#">Buy</a></td>
-				<td><a class="sell" id="e4sell" href="#">Sell</a></td>
-			</tr>
-		</table>
+		<div class="tab">
+			<button class="tab_element" onclick="openTab('tab_content', 'resources')">Resources</button>
+			<button class="tab_element" onclick="openTab('tab_content', 'army')">Army</button>
+			<button class="tab_element" onclick="openTab('tab_content', 'map')">Map</button>
+			<button class="tab_element" onclick="openTab('tab_content', 'shop')">Shop</button>
 		</div>
+
+		<div id="resources" class="tab_content default">
+			<h2>Resources</h2>
+
+			<div class="resources_tab">
+					<button class="resources_tab_element" onclick="openTab('resource_content', 'gold')">Gold</button>
+					<button class="resources_tab_element" onclick="openTab('resource_content', 'wood')">Wood</button>
+					<button class="resources_tab_element" onclick="openTab('resource_content', 'stone')">Stone</button>
+					<button class="resources_tab_element" onclick="openTab('resource_content', 'iron')">Iron</button>
+					<button class="resources_tab_element" onclick="openTab('resource_content', 'crop')">Crop</button>
+			</div>
+		</div>
+
+		<div id="army" class="tab_content">
+			<h2>Army</h2>
+		</div>
+
+
+		<div id="map" class="tab_content">
+			<h2>Map</h2>
+		</div>
+
+		<div id="shop" class="tab_content">
+			<h2>Shop</h2>
+			<table id="elements">
+				<colgroup>
+					<col width="125">
+					<col width="60">
+					<col width="100">
+					<col width="150">
+				</colgroup>
+				<tr>
+					<th>Name</th>
+					<th>#</th>
+					<th>Buy</th>
+					<th>Sell</th>
+				</tr>
+
+				<tr id="e1">
+					<td><a class="element" id="elem1"></a></td>
+					<td><a id="e1q"></a></td>
+					<td><a class="buy" id="e1buy" href="javascript:void(0);">Buy</a></td>
+					<td><a class="sell" id="e1sell" href="javascript:void(0);">Sell</a></td>
+				</tr>
+
+				<tr id="e2">
+					<td><a class="element" id="elem2"></a></td>
+					<td><a id="e2q"></a></td>
+					<td><a class="buy" id="e2buy" href="javascript:void(0);">Buy</a></td>
+					<td><a class="sell" id="e2sell" href="javascript:void(0);">Sell</a></td>
+				</tr>
+
+				<tr id="e3">
+					<td><a class="element" id="elem3"></a></td>
+					<td><a id="e3q"></a></td>
+					<td><a class="buy" id="e3buy" href="javascript:void(0);">Buy</a></td>
+					<td><a class="sell" id="e3sell" href="javascript:void(0);">Sell</a></td>
+				</tr>
+
+				<tr id="e4">
+					<td><a class="element" id="elem4"></a></td>
+					<td><a id="e4q"></a></td>
+					<td><a class="buy" id="e4buy" href="javascript:void(0);">Buy</a></td>
+					<td><a class="sell" id="e4sell" href="javascript:void(0);">Sell</a></td>
+				</tr>
+			</table>
+
+
+
+			<table id="resource_table">
+				<tr><th><p class ="resources" id="rhead"><b>Resources</b></p></th></tr>
+				<tr><td><p class ="resources" id="gold"></p></td></tr>
+				<tr><td><p class ="resources" id="wood"></p></td></tr>
+				<tr><td><p class ="resources" id="stone"></p></td></tr>
+				<tr><td><p class ="resources" id="metal"></p></td></tr>
+				<tr><td><p class ="resources" id="crop"></p></td></tr>
+			</table>
+
+			<!-- <table id="upgrades">
+				<tr>
+					<th colspan="2">Upgrades</th>
+				</tr>
+
+				<tr>
+					<td>Upgrade Thing</td>
+					<td>Upgrade Thing</td>
+				</tr>
+			</table>
+ -->
+		</div>
+
+
+
+
 
 		<script src="scripts.js"> </script>
 	</body>
