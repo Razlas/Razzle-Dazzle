@@ -1,40 +1,35 @@
 var continueButton = document.getElementById('continue');
 var intro = document.getElementById('intro');
-var hiddenDiv = document.getElementById('hiddenDiv');
+var hiddenDiv = document.getElementById('hiddenDiv1');
 
-var elemOne   = document.getElementById('elem1');
-var elemTwo   = document.getElementById('elem2');
-var elemThree = document.getElementById('elem3');
-var elemFour  = document.getElementById('elem4');
+var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3')];
 
-var e1buy  = document.getElementById('e1buy');
-var e1sell = document.getElementById('e1sell');
-var e2buy  = document.getElementById('e2buy');
-var e2sell = document.getElementById('e2sell');
-var e3buy  = document.getElementById('e3buy');
-var e3sell = document.getElementById('e3sell');
-var e4buy  = document.getElementById('e4buy');
-var e4sell = document.getElementById('e4sell');
+//Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
+/*Upgrade Names:  
+	GoldMiner: Reinforced Picks (Profit 1.5x)
+	Lumberjacks: Reinforced Lumber Axes (Profit 1.5x)
+	Stonecutter: Reinforced Chisels (Profit 1.5x)
+	IronMiner: Reinforced Picks (Profit 1.5x)
 
-var tr2 = document.getElementById('e2');
-var tr3 = document.getElementById('e3');
-var tr4 = document.getElementById('e4');
+	Blacksmiths: 
+	Chef: 							
+*/
 
-var goldMiner = setInterval(goldMiner, 5000);
-
-
-var names = ['Gold Miner', 'TestWorker2', 'TestWorker3', 'TestWorker4'];
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
-var resAmounts = [1000, 1000, 1000, 1000, 1000];
+// var GetMultiplier  = [1, 1, 1, 1, 1];
+var SetRate = [0, 0, 0, 0, 0];
+var GetRate = [0, 0, 0, 0, 0];
+var resAmounts = [10000, 10000, 10000, 10000, 10000];
 
+var updateRates = [null, null, null, null, null];
 
 class Elem {
 	constructor(name, goldC, woodC, stoneC, metalC, cropC) {
-		this.name   	= name;
-		this.cost 		= [goldC, woodC, stoneC, metalC, cropC];
-		this.quantity 	= 0;
-		this.subject 	= subject;
-		this.affect 	= this.affect;
+		this.name  	  = name;
+		this.cost  	  = [goldC, woodC, stoneC, metalC, cropC];
+		this.quantity = 0;
+
+		this.sendData();
 	}
 
 	buy() {
@@ -55,11 +50,10 @@ class Elem {
 				resAmounts[i] -= this.cost[i];
 			}
 			update();
+			this.sendData();
+			workerUpdate();
 		} else {
 			missing = missing.substring(0, missing.length - 2);
-			// if(missing > 1) {
-			// 	missing = missing.substr(0, missing.lastIndexOf(',') - 1) + " or " + missing.substr(missing.lastIndexOf(',' + 1), missing.length);)
-			// }
 			alert("You do not have enough" + missing);
 		}
 	}
@@ -67,11 +61,20 @@ class Elem {
 	sell() {
 		if(this.quantity > 0) {
 			this.quantity -= 1;
-			for(var i=0; i < this.cost.length;i++) {
+			for(var i = 0; i < this.cost.length;i++) {
 				resAmounts[i]+=Math.floor(this.cost[i]/2);
 			}
 			update();
+			this.sendData();
+			workerUpdate();
 		}
+	}
+
+	sendData() {
+		document.getElementById(this.name+'Name').innerHTML = this.name;
+		document.getElementById(this.name+'Quantity').innerHTML = this.quantity;
+		document.getElementById(this.name+'Buy').innerHTML = this.cost;
+		document.getElementById(this.name+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
 	}
 
 	getCost() {
@@ -82,10 +85,16 @@ class Elem {
 	getName() {return this.name;}
 }
 
-let firstElement = new Elem(names[0], 10, 10, 10, 10, 5); 
-let secondElement = new Elem(names[1], 50, 50, 50, 50, 25);
-let thirdElement = new Elem(names[2], 100, 100, 100, 100, 50);
-let fourthElement = new Elem(names[3], 200, 200, 200, 200, 100);
+let elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5), 
+				new Elem('Lumberjack', 50, 50, 50, 50, 25), 
+				new Elem('Stonecutter', 100, 100, 100, 100, 50), 
+				new Elem('IronMiner', 200, 200, 200, 200, 100)];
+
+window.onload = function() {
+	update();
+	workerUpdate();
+}
+
 
 function update() {
 	var g = resources[0] + ": " + resAmounts[0];
@@ -101,65 +110,98 @@ function update() {
 	document.getElementById('stone').innerHTML = s;
 	document.getElementById('metal').innerHTML = m;
 	document.getElementById('crop').innerHTML = c;
+}
 
-	document.getElementById('elem1').innerHTML = firstElement.getName();
-	document.getElementById('elem2').innerHTML = secondElement.getName();
-	document.getElementById('elem3').innerHTML = thirdElement.getName();
-	document.getElementById('elem4').innerHTML = fourthElement.getName();
+function workerUpdate() {
+	update();
+	GetRate[0] = elements[0].getQuantity();
+	GetRate[1] = elements[1].getQuantity();
+	GetRate[2] = elements[2].getQuantity();
+	GetRate[3] = elements[3].getQuantity();
+	GetRate[4] = -0.2*(elements[0].getQuantity()+elements[1].getQuantity()+elements[2].getQuantity()+elements[3].getQuantity());
 
-	document.getElementById('e1q').innerHTML = firstElement.getQuantity();
-	document.getElementById('e2q').innerHTML = secondElement.getQuantity();
-	document.getElementById('e3q').innerHTML = thirdElement.getQuantity();
-	document.getElementById('e4q').innerHTML = fourthElement.getQuantity();
+	for(i=0; i<updateRates.length; i++) {
+		if(GetRate[i]!==SetRate[i]) {
+			SetRate[i]=GetRate[i];
+			clearInterval(updateRates[i]);
+			updateRates[i] = setInterval(getUpdates[i], 1000/Math.abs(GetRate[i]));
+		}
+	}
+}
 
-	document.getElementById('e1buy').innerHTML = firstElement.getCost();
-	document.getElementById('e2buy').innerHTML = secondElement.getCost();
-	document.getElementById('e3buy').innerHTML = thirdElement.getCost();
-	document.getElementById('e4buy').innerHTML = fourthElement.getCost();
+var getUpdates = [
+	goldMineUpdate,
+	woodChopUpdate,
+	stoneMineUpdate,
+	metalMineUpdate,
+	cropHarvestUpdate
+]
 
-	document.getElementById('e1sell').innerHTML = Math.floor(firstElement.getCost()[0]/2) + "," + Math.floor(firstElement.getCost()[1]/2) + "," + Math.floor(firstElement.getCost()[2]/2) + "," + Math.floor(firstElement.getCost()[3]/2) + "," + Math.floor(firstElement.getCost()[4]/2);
-	document.getElementById('e2sell').innerHTML = Math.floor(secondElement.getCost()[0]/2) + "," + Math.floor(secondElement.getCost()[1]/2) + "," + Math.floor(secondElement.getCost()[2]/2) + "," + Math.floor(secondElement.getCost()[3]/2) + "," + Math.floor(secondElement.getCost()[4]/2);
-	document.getElementById('e3sell').innerHTML = Math.floor(thirdElement.getCost()[0]/2) + "," + Math.floor(thirdElement.getCost()[1]/2) + "," + Math.floor(thirdElement.getCost()[2]/2) + "," + Math.floor(thirdElement.getCost()[3]/2) + "," + Math.floor(thirdElement.getCost()[4]/2);
-	document.getElementById('e4sell').innerHTML = Math.floor(fourthElement.getCost()[0]/2) + "," + Math.floor(fourthElement.getCost()[1]/2) + "," + Math.floor(fourthElement.getCost()[2]/2) + "," + Math.floor(fourthElement.getCost()[3]/2) + "," + Math.floor(fourthElement.getCost()[4]/2);
+function goldMineUpdate() {
+	if(GetRate[0]!== 0){
+		if(GetRate[0] > 0) {
+			resAmounts[0]++;
+		} else resAmounts[0]--;
+		update();
+	}
+}
+
+function woodChopUpdate() {
+	if(GetRate[1]!==0){
+		if(GetRate[1]>0) {
+			resAmounts[1]++;
+		} else resAmounts[1]--;
+		update();
+	}
+}
+
+function stoneMineUpdate() {
+	if(GetRate[2]!==0){
+		if(GetRate[2]>0) {
+			resAmounts[2]++;
+		} else resAmounts[2]--;
+		update();
+	}
+}
+
+function metalMineUpdate() {
+	if(GetRate[3]!==0){
+		if(GetRate[3]>0) {
+			resAmounts[3]++;
+		} else resAmounts[3]--;
+		update();
+	}
+}
+
+function cropHarvestUpdate() {
+	if(GetRate[4]!==0){
+		if(GetRate[4]>0) {
+			resAmounts[4]++;
+		} else resAmounts[4]--;
+		update();
+	}
 }
 
 function showElements() {
-	if(firstElement.getQuantity() >= 5) {
-		tr2.style.display = 'table-row';
-	}
-
-	if(secondElement.getQuantity() >= 5) {
-		tr3.style.display = 'table-row';
-	}
-
-	if(thirdElement.getQuantity() >= 5) {
-		tr4.style.display = 'table-row';
+	for(i = 0; i < elements.length-1; i++) {
+		if(elements[i].getQuantity() >= 5) {
+			elementsDisplay[i].style.display = 'table-row';
+		}
 	}
 }
 
-window.onload = function() {
-	update();
 
-}
+GoldMinerBuy.onclick  = function() {elements[0].buy();}
+GoldMinerSell.onclick = function() {elements[0].sell();}
 
-function goldMiner() {
-	resAmounts[0] += firstElement.getQuantity()*2;
-	resAmounts[5] -= firstElement.getQuantity();
-	update();
-}
+LumberjackBuy.onclick  = function() {elements[1].buy();}
+LumberjackSell.onclick = function() {elements[1].sell();}
 
+StonecutterBuy.onclick  = function() {elements[2].buy();}
+StonecutterSell.onclick = function() {elements[2].sell();}
 
-e1buy.onclick  = function() {firstElement.buy();}
-e1sell.onclick = function() {firstElement.sell();}
-
-e2buy.onclick  = function() {secondElement.buy();}
-e2sell.onclick = function() {secondElement.sell();}
-
-e3buy.onclick  = function() {thirdElement.buy();}
-e3sell.onclick = function() {thirdElement.sell();}
-
-e4buy.onclick  = function() {fourthElement.buy();}
-e4sell.onclick = function() {fourthElement.sell();}
+IronMinerBuy.onclick  = function() {elements[3].buy();}
+IronMinerSell.onclick = function() {elements[3].sell();}
 
 function openTab(tabGroup, tabName) {
 	var i, tabContent, tabLinks;
@@ -171,4 +213,3 @@ function openTab(tabGroup, tabName) {
 
 	document.getElementById(tabName).style.display = "block";
 }
-
