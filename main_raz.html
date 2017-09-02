@@ -11,8 +11,8 @@
 		<div class="tab">
 			<button class="tab_element" onclick="openTab('tab_content', 'resources')">Resources</button>
 			<button class="tab_element" onclick="openTab('tab_content', 'army')">Army</button>
-			<button class="tab_element" onclick="openTab('tab_content', 'map')">Map</button>
-			<button class="tab_element" onclick="openTab('tab_content', 'shop')">Shop</button>
+<!-- 			<button class="tab_element" onclick="openTab('tab_content', 'map')">Map</button>
+ -->			<button class="tab_element" onclick="openTab('tab_content', 'shop')">Shop</button>
 		</div>
 
 		<div id="resources" class="tab_content default">
@@ -52,10 +52,10 @@
 		</div>
 
 
-		<div id="map" class="tab_content">
+	<!-- 	<div id="map" class="tab_content">
 			<h2>Map</h2>
 		</div>
-
+ -->
 		<div id="shop" class="tab_content">
 			<h2>Shop</h2>
 			<table id="elements">
@@ -98,6 +98,13 @@
 					<td><a id="IronMinerQuantity"></a></td>
 					<td><a class="buy" id="IronMinerBuy" href="javascript:void(0);">Buy</a></td>
 					<td><a class="sell" id="IronMinerSell" href="javascript:void(0);">Sell</a></td>
+				</tr>
+
+				<tr id="e4">
+					<td><a class="element" id="FarmerName"></a></td>
+					<td><a id="FarmerQuantity"></a></td>
+					<td><a class="buy" id="FarmerBuy" href="javascript:void(0);">Buy</a></td>
+					<td><a class="sell" id="FarmerSell" href="javascript:void(0);">Sell</a></td>
 				</tr>
 			</table>
 

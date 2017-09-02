@@ -2,7 +2,7 @@ var continueButton = document.getElementById('continue');
 var intro = document.getElementById('intro');
 var hiddenDiv = document.getElementById('hiddenDiv1');
 
-var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3')];
+var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3'), document.getElementById('e4')];
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -16,7 +16,6 @@ var elementsDisplay = [document.getElementById('e1'), document.getElementById('e
 */
 
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
-// var GetMultiplier  = [1, 1, 1, 1, 1];
 var SetRate = [0, 0, 0, 0, 0];
 var GetRate = [0, 0, 0, 0, 0];
 var resAmounts = [10000, 10000, 10000, 10000, 10000];
@@ -24,11 +23,13 @@ var resAmounts = [10000, 10000, 10000, 10000, 10000];
 var updateRates = [null, null, null, null, null];
 
 class Elem {
-	constructor(name, goldC, woodC, stoneC, metalC, cropC) {
+	constructor(name, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
 		this.name  	  = name;
 		this.cost  	  = [goldC, woodC, stoneC, metalC, cropC];
+		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
 		this.quantity = 0;
 
+		this.upgrades = [];
 		this.sendData();
 	}
 
@@ -85,10 +86,13 @@ class Elem {
 	getName() {return this.name;}
 }
 
-let elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5), 
-				new Elem('Lumberjack', 50, 50, 50, 50, 25), 
-				new Elem('Stonecutter', 100, 100, 100, 100, 50), 
-				new Elem('IronMiner', 200, 200, 200, 200, 100)];
+var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
+				new Elem('Lumberjack', 50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
+				new Elem('Stonecutter', 100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
+				new Elem('IronMiner', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
+				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
+
+
 
 window.onload = function() {
 	update();
@@ -114,15 +118,17 @@ function update() {
 
 function workerUpdate() {
 	update();
-	GetRate[0] = elements[0].getQuantity();
-	GetRate[1] = elements[1].getQuantity();
-	GetRate[2] = elements[2].getQuantity();
-	GetRate[3] = elements[3].getQuantity();
-	GetRate[4] = -0.2*(elements[0].getQuantity()+elements[1].getQuantity()+elements[2].getQuantity()+elements[3].getQuantity());
+
+	for(i=0; i<updateRates.length; i++) {
+		GetRate[i]=0;
+		for(j=0; j<elements.length; j++) {
+			GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity();
+		}
+	}
 
 	for(i=0; i<updateRates.length; i++) {
 		if(GetRate[i]!==SetRate[i]) {
-			SetRate[i]=GetRate[i];
+			SetRate[i] = GetRate[i];
 			clearInterval(updateRates[i]);
 			updateRates[i] = setInterval(getUpdates[i], 1000/Math.abs(GetRate[i]));
 		}
@@ -183,25 +189,53 @@ function cropHarvestUpdate() {
 }
 
 function showElements() {
-	for(i = 0; i < elements.length-1; i++) {
+	for(i = 0; i < elements.length - 1; i++) {
 		if(elements[i].getQuantity() >= 5) {
 			elementsDisplay[i].style.display = 'table-row';
 		}
 	}
 }
 
+// function gmUpgrades() {
+// 	if(resAmount[0] >= upgradeCost[i]) {
+// 		elements[0].produce[0] *= ;
+// 		workerUpdate();
+// 	}
+// }
 
-GoldMinerBuy.onclick  = function() {elements[0].buy();}
-GoldMinerSell.onclick = function() {elements[0].sell();}
+// function ljUpgrades() {
 
-LumberjackBuy.onclick  = function() {elements[1].buy();}
-LumberjackSell.onclick = function() {elements[1].sell();}
 
-StonecutterBuy.onclick  = function() {elements[2].buy();}
-StonecutterSell.onclick = function() {elements[2].sell();}
+// }
 
-IronMinerBuy.onclick  = function() {elements[3].buy();}
-IronMinerSell.onclick = function() {elements[3].sell();}
+
+// function scUpgrades() {
+
+// }
+
+// function imUpgrades() {
+
+// }
+
+// function frUpgrades() {
+
+// }
+
+
+document.getElementById('GoldMinerBuy').onclick  = function() {elements[0].buy();}
+document.getElementById('GoldMinerSell').onclick = function() {elements[0].sell();}
+
+document.getElementById('LumberjackBuy').onclick  = function() {elements[1].buy();}
+document.getElementById('LumberjackSell').onclick = function() {elements[1].sell();}
+
+document.getElementById('StonecutterBuy').onclick  = function() {elements[2].buy();}
+document.getElementById('StonecutterSell').onclick = function() {elements[2].sell();}
+
+document.getElementById('IronMinerBuy').onclick  = function() {elements[3].buy();}
+document.getElementById('IronMinerSell').onclick = function() {elements[3].sell();}
+
+document.getElementById('FarmerBuy').onclick = function() {elements[4].buy();}
+document.getElementById('FarmerSell').onclick = function() {elements[4].sell();}
 
 function openTab(tabGroup, tabName) {
 	var i, tabContent, tabLinks;
