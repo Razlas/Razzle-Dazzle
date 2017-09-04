@@ -18,7 +18,9 @@ var elementsDisplay = [document.getElementById('e1'), document.getElementById('e
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
 var SetRate = [0, 0, 0, 0, 0];
 var GetRate = [0, 0, 0, 0, 0];
-var resAmounts = [10000, 10000, 10000, 10000, 10000];
+var resAmounts = [10000, 10000, 10000, 10000, 10];
+var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
+
 
 var updateRates = [null, null, null, null, null];
 
@@ -37,7 +39,7 @@ class Elem {
 		var canBuy = true;
 		var missing = " ";
 		var numInvalid = 0;
-		for(var i=0; i < this.cost.length; i++) {
+		for(let i=0; i < this.cost.length; i++) {
 			if(resAmounts[i]<this.cost[i]) {
 				canBuy = false;
 				numInvalid++;
@@ -47,7 +49,7 @@ class Elem {
 
 		if(canBuy) {
 			this.quantity+=1;
-			for(var i = 0; i < this.cost.length; i++) {
+			for(let i = 0; i < this.cost.length; i++) {
 				resAmounts[i] -= this.cost[i];
 			}
 			update();
@@ -62,7 +64,7 @@ class Elem {
 	sell() {
 		if(this.quantity > 0) {
 			this.quantity -= 1;
-			for(var i = 0; i < this.cost.length;i++) {
+			for(let i = 0; i < this.cost.length;i++) {
 				resAmounts[i]+=Math.floor(this.cost[i]/2);
 			}
 			update();
@@ -72,8 +74,18 @@ class Elem {
 	}
 
 	sendData() {
-		document.getElementById(this.name+'Name').innerHTML = this.name;
-		document.getElementById(this.name+'Quantity').innerHTML = this.quantity;
+		var eName = document.getElementsByClassName(this.name+'Name');
+		var eQuantity = document.getElementsByClassName(this.name+'Quantity');
+
+		for (let i = 0; i < eName.length; i++) {
+			eName[i].innerHTML = this.name;
+		}
+
+
+		for(let i = 0; i < eQuantity.length; i++) {
+			eQuantity[i].innerHTML = this.quantity;
+		}
+		
 		document.getElementById(this.name+'Buy').innerHTML = this.cost;
 		document.getElementById(this.name+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
 	}
@@ -93,7 +105,6 @@ var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2),
 				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
 
 
-
 window.onload = function() {
 	update();
 	workerUpdate();
@@ -101,32 +112,59 @@ window.onload = function() {
 
 
 function update() {
-	var g = resources[0] + ": " + resAmounts[0];
-	var w = resources[1] + ": " + resAmounts[1];
-	var s = resources[2] + ": " + resAmounts[2];
-	var m = resources[3] + ": " + resAmounts[3];
-	var c = resources[4] + ": " + resAmounts[4];
-	
-	showElements();
 
-	document.getElementById('gold').innerHTML = g;
-	document.getElementById('wood').innerHTML = w;
-	document.getElementById('stone').innerHTML = s;
-	document.getElementById('metal').innerHTML = m;
-	document.getElementById('crop').innerHTML = c;
-}
-
-function workerUpdate() {
-	update();
-
-	for(i=0; i<updateRates.length; i++) {
-		GetRate[i]=0;
-		for(j=0; j<elements.length; j++) {
-			GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity();
+	for(let i=0; i<resAmounts.length; i++) {
+		if(resAmounts[i]==0) {
+			workerUpdate();
 		}
 	}
 
-	for(i=0; i<updateRates.length; i++) {
+	var repNames = [resources[0] + ": " + resAmounts[0], 
+					resources[1] + ": " + resAmounts[1],
+					resources[2] + ": " + resAmounts[2],
+					resources[3] + ": " + resAmounts[3],
+					resources[4] + ": " + resAmounts[4]];
+
+	var materialRep = [document.getElementsByClassName('gold'), 
+						document.getElementsByClassName('wood'), 
+						document.getElementsByClassName('stone'), 
+						document.getElementsByClassName('metal'), 
+						document.getElementsByClassName('crop')];
+
+	for(let j = 0; j < materialRep.length; j++) {
+		for(let i = 0; i < materialRep[j].length; i++) {
+			materialRep[j][i].innerHTML = repNames[j];
+		}
+	}
+
+	playerStats[0] = elements[0].getQuantity(); //Str
+	playerStats[1] = 0; //???
+	playerStats[2] = 0; //???
+	playerStats[3] = 0; //???
+	playerStats[4] = 0;
+
+	showElements();
+}	
+
+function workerUpdate() {
+	for(let i=0; i<updateRates.length; i++) {
+		GetRate[i]=0;
+		for(let j=0; j<elements.length; j++) {
+			if(elements[j].produce[i] !== 0) {
+				let canAdd = true;
+				for(let k=0; k<elements[j].produce.length; k++) {
+					if(elements[j].produce[k]<0 && resAmounts[k] <= 0) {
+						canAdd=false;
+					}
+				}
+				if(canAdd) {
+					GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity();
+				}
+			}
+		}
+	}
+
+	for(let i=0; i<updateRates.length; i++) {
 		if(GetRate[i]!==SetRate[i]) {
 			SetRate[i] = GetRate[i];
 			clearInterval(updateRates[i]);
@@ -189,38 +227,12 @@ function cropHarvestUpdate() {
 }
 
 function showElements() {
-	for(i = 0; i < elements.length - 1; i++) {
+	for(let i = 0; i < elements.length - 1; i++) {
 		if(elements[i].getQuantity() >= 5) {
 			elementsDisplay[i].style.display = 'table-row';
 		}
 	}
 }
-
-// function gmUpgrades() {
-// 	if(resAmount[0] >= upgradeCost[i]) {
-// 		elements[0].produce[0] *= ;
-// 		workerUpdate();
-// 	}
-// }
-
-// function ljUpgrades() {
-
-
-// }
-
-
-// function scUpgrades() {
-
-// }
-
-// function imUpgrades() {
-
-// }
-
-// function frUpgrades() {
-
-// }
-
 
 document.getElementById('GoldMinerBuy').onclick  = function() {elements[0].buy();}
 document.getElementById('GoldMinerSell').onclick = function() {elements[0].sell();}
@@ -237,13 +249,14 @@ document.getElementById('IronMinerSell').onclick = function() {elements[3].sell(
 document.getElementById('FarmerBuy').onclick = function() {elements[4].buy();}
 document.getElementById('FarmerSell').onclick = function() {elements[4].sell();}
 
-function openTab(tabGroup, tabName) {
-	var i, tabContent, tabLinks;
+function openTab(thisClass, thisID, targetClass, targetID) {
+	var tabContent = document.getElementsByClassName(targetClass);
 
-	tabContent = document.getElementsByClassName(tabGroup);
-	for(i = 0; i < tabContent.length; i++) {
+	for(let i = 0; i < tabContent.length; i++) {
 		tabContent[i].style.display = "none";
+		document.getElementsByClassName(thisClass)[i].className = thisClass;
 	}
 
-	document.getElementById(tabName).style.display = "block";
+	document.getElementById(targetID).style.display = "block";
+	document.getElementById(thisID).className = thisClass + " active";
 }

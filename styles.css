@@ -65,6 +65,7 @@ div.tab {
 	overflow: hidden;
 	border: 2px solid grey;
 	background-color: #EEEEEE;
+	transition: 0.5s;
 }
 
 div.tab button {
@@ -74,12 +75,19 @@ div.tab button {
 	outline: none;
 	cursor: pointer;
 	padding: 14px 16px;
-	transition: 0.3s;
+	transition: 0.1s;
 	font-size: 17px;
 }
 
-div.tab button:hover {
+div.tab button.tab_element:hover, div.resources_tab button {
 	background-color: white;
+	color: black;
+	transition: 0.5s;
+}
+
+div.tab button.tab_element.active {
+	background-color: #222222;
+	color: white;
 }
 
 div.tab_content {
