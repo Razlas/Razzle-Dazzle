@@ -6,7 +6,7 @@
 	</head>
 	
 	<body>
-		<h1><u>The Life of Raz El</u></h1>
+		<h1 id="raz_title"><u>The Life of Raz El</u></h1>
 		
 		<div class="tab">
 			<button class="tab_element active" id="resource_tab_button" onclick="openTab('tab_element', 'resource_tab_button', 'tab_content', 'resources')">Resources</button>
@@ -27,30 +27,37 @@
 				<div class="resource_content default" id="gold_production">
 					<h3 class="producer_header"><b>Gold Production</b></h3>
 					<p class="gold"></p>
+					<p><span id="rate0"></span>/Second</p>
 					<p>Gold Miners: <span class="GoldMinerQuantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="wood_production">
 					<h3 class="producer_header">Wood Production</h3>
 					<p class="wood"></p>
+					<p><span id="rate1"></span>/Second</p>
 					<p>Lumberjacks: <span class="LumberjackQuantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="stone_production">
 					<h3 class="producer_header">Stone Production</h3>
 					<p class="stone"></p>
+					<p><span id="rate2"></span>/Second</p>
+
 					<p>Stone Cutters: <span class="StonecutterQuantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="iron_production">
 					<h3 class="producer_header">Iron Production</h3>
 					<p class="metal"></p>
+					<p><span id="rate3"></span>/Second</p>
+
 					<p>Iron Miners: <span class="IronMinerQuantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="crop_production">
 					<h3 class="producer_header">Crop Production</h3>
 					<p class="crop"></p>
+					<p><span id="rate4"></span>/Second</p>
 					<p>Farmers: <span class="FarmerQuantity"></span></p>
 				</div>
 			</div>

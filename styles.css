@@ -75,7 +75,7 @@ div.tab button {
 	outline: none;
 	cursor: pointer;
 	padding: 14px 16px;
-	transition: 0.1s;
+	transition: 0.5s;
 	font-size: 17px;
 }
 
@@ -126,5 +126,15 @@ h3.producer_header
 	padding-left: 30px;
 }
 
+/*@*//*keyframes marquee
+{
+	0% {left: 0%}
+	100% {left: 77.5%;}
+}
 
-
+h1#raz_title
+{	
+	text-align: left;
+	position:relative;
+	animation:marquee 5s linear infinite;
+}*/

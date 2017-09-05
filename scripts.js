@@ -4,6 +4,9 @@ var hiddenDiv = document.getElementById('hiddenDiv1');
 
 var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3'), document.getElementById('e4')];
 
+var windowLoaded = false;
+var clearAll = true;
+
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
 	GoldMiner: Reinforced Picks (Profit 1.5x)
@@ -18,7 +21,7 @@ var elementsDisplay = [document.getElementById('e1'), document.getElementById('e
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
 var SetRate = [0, 0, 0, 0, 0];
 var GetRate = [0, 0, 0, 0, 0];
-var resAmounts = [10000, 10000, 10000, 10000, 10];
+var resAmounts = [10000, 10000, 10000, 10000, 5000];
 var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
 
 
@@ -106,18 +109,15 @@ var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2),
 
 
 window.onload = function() {
+	windowLoaded = true;
+	setCaches();
 	update();
-	workerUpdate();
 }
-
 
 function update() {
 
-	for(let i=0; i<resAmounts.length; i++) {
-		if(resAmounts[i]==0) {
-			workerUpdate();
-		}
-	}
+	workerUpdate();
+	setCaches();
 
 	var repNames = [resources[0] + ": " + resAmounts[0], 
 					resources[1] + ": " + resAmounts[1],
@@ -171,6 +171,10 @@ function workerUpdate() {
 			updateRates[i] = setInterval(getUpdates[i], 1000/Math.abs(GetRate[i]));
 		}
 	}
+
+	for(let i=0; i<GetRate.length; i++) {
+		document.getElementById('rate'+i).innerHTML = Math.round((GetRate[i]) * 100)/100;
+	}
 }
 
 var getUpdates = [
@@ -179,7 +183,7 @@ var getUpdates = [
 	stoneMineUpdate,
 	metalMineUpdate,
 	cropHarvestUpdate
-]
+];
 
 function goldMineUpdate() {
 	if(GetRate[0]!== 0){
@@ -231,6 +235,50 @@ function showElements() {
 		if(elements[i].getQuantity() >= 5) {
 			elementsDisplay[i].style.display = 'table-row';
 		}
+	}
+}
+
+function setCaches() {	
+
+	if(clearAll) {
+		for(let i = 0; i < elements.length; i++) {
+			localStorage.removeItem(elements[i].getName()+"Quantity");
+		}
+
+		for(let i = 0; i < resources.length; i++) {
+			localStorage.removeItem(resources[i]);
+		}
+	}
+
+	if(!windowLoaded) {
+		for(let i = 0; i < elements.length; i++) {
+			localStorage[elements[i].getName()+"Quantity"] = elements[i].getQuantity();
+		}
+
+		for(let i = 0; i < resources.length; i++) {
+			localStorage[resources[i]] = resAmounts[i];
+		}
+	}
+
+	if(windowLoaded) {
+		for(let i = 0; i < elements.length; i++) {
+			if(!localStorage.getItem(elements[i].getName()+"Quantity")) {
+				localStorage.setItem(elements[i].getName()+"Quantity", elements[i].getQuantity());
+			} else {
+				elements[i].quantity = parseInt(localStorage[elements[i].getName()+"Quantity"]);
+				elements[i].sendData();
+			}
+		}
+
+		for(let i = 0; i < resources.length; i++) {
+			if(!localStorage.getItem(resources[i])) {
+				localStorage.setItem(resources[i], resAmounts[i]);
+			} else {
+				resAmounts[i] = parseInt(localStorage[resources[i]]);
+			}
+		}
+
+		windowLoaded = !windowLoaded;
 	}
 }
 
