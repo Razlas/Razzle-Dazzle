@@ -5,7 +5,7 @@ var hiddenDiv = document.getElementById('hiddenDiv1');
 var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3'), document.getElementById('e4')];
 
 var windowLoaded = false;
-var clearAll = true;
+var clearAll = false;
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -23,9 +23,9 @@ var SetRate = [0, 0, 0, 0, 0];
 var GetRate = [0, 0, 0, 0, 0];
 var resAmounts = [10000, 10000, 10000, 10000, 5000];
 var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
-
-
 var updateRates = [null, null, null, null, null];
+
+//Cost scales: 5, 10, 15, 20
 
 class Elem {
 	constructor(name, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
@@ -101,18 +101,49 @@ class Elem {
 	getName() {return this.name;}
 }
 
+class Upgrade {
+	constructor(name, desc, unlocked, goldC, ref, goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar) {
+		this.name = name;
+		this.desc = desc;
+		this.goldC = goldC;
+		this.ref = ref;
+		this.scalars = [goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar];
+		this.unlocked = unlocked;
+	}
+
+	buy() {
+		if(this.goldC <= resAmounts[0]) {
+			this.unlocked = true;
+ 			resAmounts[0] -= this.goldC;
+		} else alert("You do not have enough gold to purchase this upgrade");
+	}
+
+	getName() {return this.name;}
+	getDesc() {return this.desc;}
+}
+
+var upgrades = [new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", false, 100, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", false, 500, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Super Duper Reinforced Picks', "Your picks feel...incredibly sturdy!", false, 5000, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", false, 25000, 0, 2, 1, 1, 1, 1)];
+
+				/*new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", 100, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", 500, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Super Duper Sharp Lumber Axes', "Your axes feel...incredibly sharp!", 5000, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", 25000, 1, 1, 2, 1, 1, 1),
+	
+
+
+				*/
+
+
+
 var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
 				new Elem('Lumberjack', 50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
 				new Elem('IronMiner', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
 				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
 
-
-window.onload = function() {
-	windowLoaded = true;
-	setCaches();
-	update();
-}
 
 function update() {
 
@@ -137,11 +168,11 @@ function update() {
 		}
 	}
 
-	playerStats[0] = elements[0].getQuantity(); //Str
-	playerStats[1] = 0; //???
-	playerStats[2] = 0; //???
-	playerStats[3] = 0; //???
-	playerStats[4] = 0;
+	// playerStats[0] = elements[0].getQuantity(); //Str
+	// playerStats[1] = 0; //???
+	// playerStats[2] = 0; //???
+	// playerStats[3] = 0; //???
+	// playerStats[4] = 0;
 
 	showElements();
 }	
@@ -158,7 +189,13 @@ function workerUpdate() {
 					}
 				}
 				if(canAdd) {
-					GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity();
+					let mult=1;
+					for(let l=0; l<upgrades.length; l++) {
+						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
+							mult*=upgrades[l].scalars[i];
+						}
+					}
+					GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult;
 				}
 			}
 		}
@@ -168,64 +205,19 @@ function workerUpdate() {
 		if(GetRate[i]!==SetRate[i]) {
 			SetRate[i] = GetRate[i];
 			clearInterval(updateRates[i]);
-			updateRates[i] = setInterval(getUpdates[i], 1000/Math.abs(GetRate[i]));
+			updateRates[i] = setInterval(function(){resourcesUpdate(i);}, 1000/Math.abs(GetRate[i]));
 		}
 	}
-
 	for(let i=0; i<GetRate.length; i++) {
 		document.getElementById('rate'+i).innerHTML = Math.round((GetRate[i]) * 100)/100;
 	}
 }
 
-var getUpdates = [
-	goldMineUpdate,
-	woodChopUpdate,
-	stoneMineUpdate,
-	metalMineUpdate,
-	cropHarvestUpdate
-];
-
-function goldMineUpdate() {
-	if(GetRate[0]!== 0){
-		if(GetRate[0] > 0) {
-			resAmounts[0]++;
-		} else resAmounts[0]--;
-		update();
-	}
-}
-
-function woodChopUpdate() {
-	if(GetRate[1]!==0){
-		if(GetRate[1]>0) {
-			resAmounts[1]++;
-		} else resAmounts[1]--;
-		update();
-	}
-}
-
-function stoneMineUpdate() {
-	if(GetRate[2]!==0){
-		if(GetRate[2]>0) {
-			resAmounts[2]++;
-		} else resAmounts[2]--;
-		update();
-	}
-}
-
-function metalMineUpdate() {
-	if(GetRate[3]!==0){
-		if(GetRate[3]>0) {
-			resAmounts[3]++;
-		} else resAmounts[3]--;
-		update();
-	}
-}
-
-function cropHarvestUpdate() {
-	if(GetRate[4]!==0){
-		if(GetRate[4]>0) {
-			resAmounts[4]++;
-		} else resAmounts[4]--;
+function resourcesUpdate(i) {
+	if(GetRate[i]!== 0){
+		if(GetRate[i] > 0) {
+			resAmounts[i]++;
+		} else resAmounts[i]--;
 		update();
 	}
 }
@@ -238,8 +230,7 @@ function showElements() {
 	}
 }
 
-function setCaches() {	
-
+function setCaches() {
 	if(clearAll) {
 		for(let i = 0; i < elements.length; i++) {
 			localStorage.removeItem(elements[i].getName()+"Quantity");
@@ -277,25 +268,14 @@ function setCaches() {
 				resAmounts[i] = parseInt(localStorage[resources[i]]);
 			}
 		}
-
 		windowLoaded = !windowLoaded;
 	}
 }
 
-document.getElementById('GoldMinerBuy').onclick  = function() {elements[0].buy();}
-document.getElementById('GoldMinerSell').onclick = function() {elements[0].sell();}
-
-document.getElementById('LumberjackBuy').onclick  = function() {elements[1].buy();}
-document.getElementById('LumberjackSell').onclick = function() {elements[1].sell();}
-
-document.getElementById('StonecutterBuy').onclick  = function() {elements[2].buy();}
-document.getElementById('StonecutterSell').onclick = function() {elements[2].sell();}
-
-document.getElementById('IronMinerBuy').onclick  = function() {elements[3].buy();}
-document.getElementById('IronMinerSell').onclick = function() {elements[3].sell();}
-
-document.getElementById('FarmerBuy').onclick = function() {elements[4].buy();}
-document.getElementById('FarmerSell').onclick = function() {elements[4].sell();}
+for(let i = 0; i < elements.length; i++) {
+	document.getElementById(elements[i].getName()+'Buy').onclick = function() {elements[i].buy();}
+	document.getElementById(elements[i].getName()+'Sell').onclick = function() {elements[i].sell();}
+}
 
 function openTab(thisClass, thisID, targetClass, targetID) {
 	var tabContent = document.getElementsByClassName(targetClass);
@@ -307,4 +287,10 @@ function openTab(thisClass, thisID, targetClass, targetID) {
 
 	document.getElementById(targetID).style.display = "block";
 	document.getElementById(thisID).className = thisClass + " active";
+}
+
+window.onload = function() {
+	windowLoaded = true;
+	setCaches();
+	update();
 }
