@@ -13,7 +13,6 @@ var clearAll = false;
 	Lumberjacks: Reinforced Lumber Axes (Profit 1.5x)
 	Stonecutter: Reinforced Chisels (Profit 1.5x)
 	IronMiner: Reinforced Picks (Profit 1.5x)
-
 	Blacksmiths: 
 	Chef: 							
 */
@@ -25,7 +24,38 @@ var resAmounts = [10000, 10000, 10000, 10000, 5000];
 var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
 var updateRates = [null, null, null, null, null];
 
+
+var buyAmount = 10;
+var maxBuy = false;
+
+
 //Cost scales: 5, 10, 15, 20
+
+// document.addEventListener("keydown", function(event) {
+//   console.log(event.which);
+
+//   switch(event.which)
+//   {
+//   	case 16:
+//   	buyAmount = 10;
+//   	max = false;
+//   	break;
+
+//   	case 18:
+//   	buyAmount = 100;
+//   	max = false;
+//   	break;
+
+//   	case 91:
+//   	max = true;
+//   	break;
+
+//   	default:
+//   	buyAmount = 1;
+//   	max = false;
+//   }
+// }
+
 
 class Elem {
 	constructor(name, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
@@ -101,14 +131,22 @@ class Elem {
 	getName() {return this.name;}
 }
 
-class Upgrade {
-	constructor(name, desc, unlocked, goldC, ref, goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar) {
+class Unlock {
+	constructor(name, desc, subDesc, unlocked) {
 		this.name = name;
 		this.desc = desc;
+		this.subDesc = subDesc;
+		this.unlocked = unlocked;
+	}
+}
+
+class Upgrade extends Unlock {
+	constructor(name, desc, subDesc, unlocked, goldC, ref, goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar) {
+		super(name, desc, subDesc, unlocked);
+
 		this.goldC = goldC;
 		this.ref = ref;
 		this.scalars = [goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar];
-		this.unlocked = unlocked;
 	}
 
 	buy() {
@@ -118,25 +156,9 @@ class Upgrade {
 		} else alert("You do not have enough gold to purchase this upgrade");
 	}
 
-	getName() {return this.name;}
+	getName() {return this.name.replace(/\s/g,'');}
 	getDesc() {return this.desc;}
 }
-
-var upgrades = [new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", false, 100, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", false, 500, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Super Duper Reinforced Picks', "Your picks feel...incredibly sturdy!", false, 5000, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", false, 25000, 0, 2, 1, 1, 1, 1)];
-
-				/*new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", 100, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", 500, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Super Duper Sharp Lumber Axes', "Your axes feel...incredibly sharp!", 5000, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", 25000, 1, 1, 2, 1, 1, 1),
-	
-
-
-				*/
-
-
 
 var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
 				new Elem('Lumberjack', 50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
@@ -145,10 +167,37 @@ var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2),
 				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
 
 
+var upgrades = [new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", false, 100, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", false, 500, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Super Duper Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", false, 5000, 0, 2, 1, 1, 1, 1),
+				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", false, 25000, 0, 2, 1, 1, 1, 1)];
+
+				/*new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", 100, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", 500, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Super Duper Sharp Lumber Axes', "Your axes feel...incredibly sharp!", 5000, 1, 1, 2, 1, 1, 1),
+				/*new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", 25000, 1, 1, 2, 1, 1, 1),
+				
+				/*new Upgrade('')
+				
+
+				*/
+
+var unlocks =  [new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", false),
+				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", false),
+				new Unlock('Hoes Only', "You're one with the land", "Purchased a Farmer", false)];
+
+
+
+
+
 function update() {
 
 	workerUpdate();
 	setCaches();
+
+	for(let i = 0; i < elements.length; i++) {
+		elements[i].sendData();
+	}
 
 	var repNames = [resources[0] + ": " + resAmounts[0], 
 					resources[1] + ": " + resAmounts[1],
@@ -271,6 +320,51 @@ function setCaches() {
 		windowLoaded = !windowLoaded;
 	}
 }
+
+/*
+function setCaches() {
+	let elemQuan; 
+
+	for(let i=0; i<elements.length; i++) {
+		elemQuan[i] = elemets[i].getQuantity();
+	}
+
+	if(clearAll) {
+		localStorage.removeItem(elements);
+		localStorage.removeItem(resources);
+		localStorage.removeItem(upgrades);
+	}
+
+	if(!windowLoaded) {
+		for(let i = 0; i < elements.length; i++) {
+			elemQuan[i] = elements[i].getQuantity();
+		}
+
+		localStorage.elements = JSON.stringify(elemQuan);
+		localStorage.resources = JSON.stringify(resAmounts);
+	}
+
+	if(windowLoaded) {
+		if(!localStorage.getItem("elements")) {
+			localStorage.setItem("elements", JSON.stringify(elemQuan));
+		} else {
+			// for(let i = 0; i < elements.length; i++)
+			// elements[i].quantity = JSON.parse(localStorage.getItem("elements"));
+		}
+
+		if(!localStorage.getItem("resources")) {
+			localStorage.setItem("resources", JSON.stringify(resources));
+		} else {
+			parsedElemQuan = JSON.parse(localStorage.getItem("resources"))
+			for(let i = 0; i < parsedElemQuan.length; i++) {
+				elements[i].quantity = parsedElemQuan[i];
+			}
+		}
+		windowLoaded = !windowLoaded;
+	}
+
+}
+*/
 
 for(let i = 0; i < elements.length; i++) {
 	document.getElementById(elements[i].getName()+'Buy').onclick = function() {elements[i].buy();}
