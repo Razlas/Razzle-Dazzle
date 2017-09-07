@@ -29,7 +29,7 @@ var buyAmount = 10;
 var maxBuy = false;
 
 
-//Cost scales: 5, 10, 15, 20
+// Cost scales: 5, 10, 15, 20
 
 // document.addEventListener("keydown", function(event) {
 //   console.log(event.which);
@@ -54,7 +54,7 @@ var maxBuy = false;
 //   	buyAmount = 1;
 //   	max = false;
 //   }
-// }
+// });
 
 
 class Elem {
@@ -123,9 +123,7 @@ class Elem {
 		document.getElementById(this.name+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
 	}
 
-	getCost() {
-		return this.cost;
-	}
+	getCost() {return this.cost;}
 
 	getQuantity() {return this.quantity;}
 	getName() {return this.name;}
@@ -138,6 +136,10 @@ class Unlock {
 		this.subDesc = subDesc;
 		this.unlocked = unlocked;
 	}
+
+	isUnlocked() {return this.unlocked}
+	getName() {return this.name.replace(/\s/g,'');}
+	getDesc() {return this.desc;}
 }
 
 class Upgrade extends Unlock {
@@ -155,9 +157,6 @@ class Upgrade extends Unlock {
  			resAmounts[0] -= this.goldC;
 		} else alert("You do not have enough gold to purchase this upgrade");
 	}
-
-	getName() {return this.name.replace(/\s/g,'');}
-	getDesc() {return this.desc;}
 }
 
 var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
@@ -280,59 +279,13 @@ function showElements() {
 }
 
 function setCaches() {
-	if(clearAll) {
-		for(let i = 0; i < elements.length; i++) {
-			localStorage.removeItem(elements[i].getName()+"Quantity");
-		}
-
-		for(let i = 0; i < resources.length; i++) {
-			localStorage.removeItem(resources[i]);
-		}
-	}
-
-	if(!windowLoaded) {
-		for(let i = 0; i < elements.length; i++) {
-			localStorage[elements[i].getName()+"Quantity"] = elements[i].getQuantity();
-		}
-
-		for(let i = 0; i < resources.length; i++) {
-			localStorage[resources[i]] = resAmounts[i];
-		}
-	}
-
-	if(windowLoaded) {
-		for(let i = 0; i < elements.length; i++) {
-			if(!localStorage.getItem(elements[i].getName()+"Quantity")) {
-				localStorage.setItem(elements[i].getName()+"Quantity", elements[i].getQuantity());
-			} else {
-				elements[i].quantity = parseInt(localStorage[elements[i].getName()+"Quantity"]);
-				elements[i].sendData();
-			}
-		}
-
-		for(let i = 0; i < resources.length; i++) {
-			if(!localStorage.getItem(resources[i])) {
-				localStorage.setItem(resources[i], resAmounts[i]);
-			} else {
-				resAmounts[i] = parseInt(localStorage[resources[i]]);
-			}
-		}
-		windowLoaded = !windowLoaded;
-	}
-}
-
-/*
-function setCaches() {
-	let elemQuan; 
-
-	for(let i=0; i<elements.length; i++) {
-		elemQuan[i] = elemets[i].getQuantity();
-	}
+	let elemQuan = []; 
+	let unlockedUpgrades = [];
 
 	if(clearAll) {
-		localStorage.removeItem(elements);
-		localStorage.removeItem(resources);
-		localStorage.removeItem(upgrades);
+		localStorage.removeItem("elements");
+		localStorage.removeItem("resources");
+		localStorage.removeItem("upgrades");
 	}
 
 	if(!windowLoaded) {
@@ -340,31 +293,46 @@ function setCaches() {
 			elemQuan[i] = elements[i].getQuantity();
 		}
 
+
+		for(let i=0; i<upgrades.length; i++) {
+			unlockedUpgrades[i] = Number(upgrades[i].unlocked);
+		}
+
 		localStorage.elements = JSON.stringify(elemQuan);
 		localStorage.resources = JSON.stringify(resAmounts);
+		localStorage.upgrades = JSON.stringify(unlockedUpgrades);
 	}
 
 	if(windowLoaded) {
 		if(!localStorage.getItem("elements")) {
 			localStorage.setItem("elements", JSON.stringify(elemQuan));
 		} else {
-			// for(let i = 0; i < elements.length; i++)
-			// elements[i].quantity = JSON.parse(localStorage.getItem("elements"));
-		}
-
-		if(!localStorage.getItem("resources")) {
-			localStorage.setItem("resources", JSON.stringify(resources));
-		} else {
-			parsedElemQuan = JSON.parse(localStorage.getItem("resources"))
+			parsedElemQuan = JSON.parse(localStorage.getItem("elements"));
 			for(let i = 0; i < parsedElemQuan.length; i++) {
 				elements[i].quantity = parsedElemQuan[i];
 			}
 		}
-		windowLoaded = !windowLoaded;
-	}
 
+		if(!localStorage.getItem("resources")) {
+			localStorage.setItem("resources", JSON.stringify(resAmounts));
+		} else {
+			resAmounts = JSON.parse(localStorage.getItem("resources"));
+		}
+
+		if(!localStorage.getItem("upgrades")) {
+			localStorage.setItem("upgrades", JSON.stringify(unlockedUpgrades))
+		} else {
+			parsedUnlockedUpgrades = JSON.parse(localStorage.getItem("upgrades"))
+			for(let i = 0; i < parsedUnlockedUpgrades.length; i++) {
+				upgrades[i].unlocked = parsedUnlockedUpgrades[i];
+			}
+		}
+
+		windowLoaded = !windowLoaded;
+
+	}
 }
-*/
+
 
 for(let i = 0; i < elements.length; i++) {
 	document.getElementById(elements[i].getName()+'Buy').onclick = function() {elements[i].buy();}
