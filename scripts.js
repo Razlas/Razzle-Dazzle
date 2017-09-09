@@ -5,16 +5,16 @@ var hiddenDiv = document.getElementById('hiddenDiv1');
 var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3'), document.getElementById('e4')];
 
 var windowLoaded = false;
-var clearAll = false;
+var clearAll = true;
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
 	GoldMiner: Reinforced Picks (Profit 1.5x)
 	Lumberjacks: Reinforced Lumber Axes (Profit 1.5x)
 	Stonecutter: Reinforced Chisels (Profit 1.5x)
-	IronMiner: Reinforced Picks (Profit 1.5x)
-	Blacksmiths: 
-	Chef: 							
+	IronMiner: Reinforced Picks (Profit 1.5x) 
+
+	Blacksmiths:	Chef: 							
 */
 
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
@@ -28,6 +28,7 @@ var updateRates = [null, null, null, null, null];
 var buyAmount = 10;
 var maxBuy = false;
 
+var razMiddleName = "";
 
 // Cost scales: 5, 10, 15, 20
 
@@ -107,8 +108,8 @@ class Elem {
 	}
 
 	sendData() {
-		var eName = document.getElementsByClassName(this.name+'Name');
-		var eQuantity = document.getElementsByClassName(this.name+'Quantity');
+		var eName = document.getElementsByClassName(this.getName()+'Name');
+		var eQuantity = document.getElementsByClassName(this.getName()+'Quantity');
 
 		for (let i = 0; i < eName.length; i++) {
 			eName[i].innerHTML = this.name;
@@ -119,36 +120,37 @@ class Elem {
 			eQuantity[i].innerHTML = this.quantity;
 		}
 		
-		document.getElementById(this.name+'Buy').innerHTML = this.cost;
-		document.getElementById(this.name+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
+		document.getElementById(this.getName()+'Buy').innerHTML = this.cost;
+		document.getElementById(this.getName()+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
 	}
 
 	getCost() {return this.cost;}
-
 	getQuantity() {return this.quantity;}
-	getName() {return this.name;}
+	getName() {return this.name.replace(/\s/g, '');}
 }
 
 class Unlock {
-	constructor(name, desc, subDesc, unlocked) {
+	constructor(name, desc, subDesc, ref, trigger) { //Name, Description (splash), Sub Desc (informative), Reference (Affected Elemented), Trigger (Trigger Point), Unlocked (Bool)
 		this.name = name;
 		this.desc = desc;
 		this.subDesc = subDesc;
-		this.unlocked = unlocked;
+		this.ref = ref;
+		this.trigger = trigger;
+		this.unlocked = false;
 	}
 
-	isUnlocked() {return this.unlocked}
-	getName() {return this.name.replace(/\s/g,'');}
+	isUnlocked() {return this.unlocked;}
+	getName() {return this.name.replace(/\s/g, '');}
 	getDesc() {return this.desc;}
 }
 
 class Upgrade extends Unlock {
-	constructor(name, desc, subDesc, unlocked, goldC, ref, goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar) {
-		super(name, desc, subDesc, unlocked);
+	constructor(name, desc, subDesc, ref, trigger, goldC, goldPScale, woodPScale, stonePScale, metalPScale, cropPScale) {  //Scales
+		super(name, desc, subDesc, ref, trigger); //Same
 
 		this.goldC = goldC;
-		this.ref = ref;
-		this.scalars = [goldPScalar, woodPScalar, stonePScalar, metalPScalar, cropPScalar];
+		this.scales = [goldPScale, woodPScale, stonePScale, metalPScale, cropPScale];
+		this.unlocked = false;
 	}
 
 	buy() {
@@ -157,37 +159,79 @@ class Upgrade extends Unlock {
  			resAmounts[0] -= this.goldC;
 		} else alert("You do not have enough gold to purchase this upgrade");
 	}
+
+	sendData() {
+		var uID = document.getElementsByClassName("upgrade"+this.getID());
+		// var uName = document.getElementsByClassName("upgrade"+this.getID()+"Name");
+		var uDesc = document.getElementsByClassName("upgrade"+this.getID()+"Desc");
+		var uSubDesc = document.getElementsByClassName("upgrade"+this.getID()+"SubDesc");
+
+		for(let i = 0; i < uID.length; i++) {
+			uID[i].innerHTML = this.name;
+		}
+
+		for(let i = 0; i < uDesc.length; i++) {
+			uDesc[i].innerHTML = this.desc;
+		}
+
+		for(let i = 0; i < uSubDesc.length; i++) {
+			uSubDesc[i].innerHTML = this.subDesc;
+		}
+		
+		document.getElementById("upgrade"+this.getID()+'Buy').innerHTML = this.cost;
+	}
+
+	getID() {return this.id;}
 }
 
-var elements = [new Elem('GoldMiner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
+var elements = [new Elem('Gold Miner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
 				new Elem('Lumberjack', 50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
-				new Elem('IronMiner', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
+				new Elem('Iron Miner', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
 				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
 
 
-var upgrades = [new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", false, 100, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", false, 500, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Super Duper Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", false, 5000, 0, 2, 1, 1, 1, 1),
-				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", false, 25000, 0, 2, 1, 1, 1, 1)];
+var upgrades = [
+				//Gold Miners
+				new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", 100, 0, 5, 2, 1, 1, 1, 1), //Price, Ref, Trigger, Multiplier
+				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", 500, 0, 25, 2, 1, 1, 1, 1),
+				new Upgrade('Incredibly Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", 5000, 0, 100, 2, 1, 1, 1, 1),
+				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", 25000, 250, 0, 2, 1, 1, 1, 1),
 
-				/*new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", 100, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", 500, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Super Duper Sharp Lumber Axes', "Your axes feel...incredibly sharp!", 5000, 1, 1, 2, 1, 1, 1),
-				/*new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", 25000, 1, 1, 2, 1, 1, 1),
+				//Lumberjacks
+				new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", "Lumberjacks are 2x as efficient!", 100, 1, 5, 1, 2, 1, 1, 1), 
+				new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", "Lumberjacks are 2x as efficient!", 500, 1, 25, 1, 2, 1, 1, 1),
+				new Upgrade('Incredibly Sharp Lumber Axes', "Your axes feel...incredibly sharp!", "Lumberjacks are 2x as efficient!", 5000, 1, 100, 1, 2, 1, 1, 1),
+				new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", "Lumberjacks are 2x as efficient!", 25000, 1, 250, 1, 2, 1, 1, 1),
 				
-				/*new Upgrade('')
-				
+				//Stonecutters
+				new Upgrade('Chiseled Chisels', "Your chisels...have abs now?", "Stonecutters are 2x as efficient!", 100, 2, 5, 1, 1, 2, 1, 1),
+				new Upgrade('Crazy Chiseled Chisels', "Okay, the abs have abs too?", "Stonecutters are 2x as efficient!", 500, 2, 25, 1, 1, 2, 1, 1),
+				new Upgrade('Colossally Chiseled Chisels', "These chisels are giving the stonecutters body image issues...", "Stonecutters are 2x as efficient!", 5000, 2, 100, 1, 1, 2, 1, 1),
+				new Upgrade('Catastrophically Chiseled Chisels', "The FDA is investigating your chisels for performance-enhancing drug use...", "Stonecutters are 2x as efficient!", 25000, 2, 250, 1, 1, 2, 1, 1),
 
-				*/
+				//Iron Miners
+				new Upgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforce picks?", "Iron Miners are 2x as efficient!", 100, 3, 5, 1, 1, 1, 2, 1),
+				new Upgrade('Super Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 500, 3, 25, 1, 1, 1, 2, 1),
+				new Upgrade('Incredibly Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 5000, 3, 100, 1, 1, 1, 2, 1),
+				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 3, 250, 1, 1, 1, 2, 1),
 
-var unlocks =  [new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", false),
-				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", false),
-				new Unlock('Hoes Only', "You're one with the land", "Purchased a Farmer", false)];
+				//Farmers
+				new Upgrade('[Hoes1]', "[HoeDesc1]", "Farmers are 2x as efficient!", 100, 4, 5, 1, 1, 1, 1, 2),
+				new Upgrade('[Hoes2]', "[HoeDesc2]", "Farmers are 2x as efficient!", 500, 4, 5, 1, 1, 1, 1, 2),
+				new Upgrade('[Hoes3]', "[HoeDesc3]", "Farmers are 2x as efficient!", 5000, 4, 5, 1, 1, 1, 1, 2),
+				new Upgrade('[Hoes4]', "[HoeDesc4]", "Farmers are 2x as efficient!", 25000, 4, 5, 1, 1, 1, 1, 2),
 
+				];
 
+var unlocks =  [
+				new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", 0, 1),
+				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", 1, 1),
+				new Unlock('Rock Hard', "...", "Purchased a Stonecutter", 2, 1),
+				new Unlock('Ironed Out', "Get those kinks settled once and for all!", "Purchased an Iron Miner", 3, 1),
+				new Unlock('Hoes Only', "You're one with the land", "Purchased a Farmer", 4, 1)
 
-
+				];
 
 function update() {
 
@@ -216,6 +260,8 @@ function update() {
 		}
 	}
 
+	document.getElementById('raz_middlename').innerHTML = razMiddleName;
+
 	// playerStats[0] = elements[0].getQuantity(); //Str
 	// playerStats[1] = 0; //???
 	// playerStats[2] = 0; //???
@@ -240,7 +286,7 @@ function workerUpdate() {
 					let mult=1;
 					for(let l=0; l<upgrades.length; l++) {
 						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
-							mult*=upgrades[l].scalars[i];
+							mult*=upgrades[l].scales[i];
 						}
 					}
 					GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult;
