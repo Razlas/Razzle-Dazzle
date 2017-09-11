@@ -2,8 +2,8 @@ var continueButton = document.getElementById('continue');
 var intro = document.getElementById('intro');
 var hiddenDiv = document.getElementById('hiddenDiv1');
 
-var elementsDisplay = [document.getElementById('e1'), document.getElementById('e2'), document.getElementById('e3'), document.getElementById('e4')];
-var upgradesDisplay = [document.getElementById('u0'), document.getElementById('u1'), document.getElementById('u2'), document.getElementById('u3'), document.getElementById('u4'), document.getElementById('u5'), document.getElementById('u6'), document.getElementById('u7'), document.getElementById('u8'), document.getElementById('u9'), document.getElementById('u10'), document.getElementById('u11'), document.getElementById('u12'), document.getElementById('u13'), document.getElementById('u14'), document.getElementById('u15'), document.getElementById('u16'), document.getElementById('u17'), document.getElementById('u18'), document.getElementById('u19'), document.getElementById('u20'), document.getElementById('u21'), document.getElementById('u22'), document.getElementById('u23'), document.getElementById('u24'), document.getElementById('u25'), document.getElementById('u26'), document.getElementById('u27'), document.getElementById('u28'), document.getElementById('u29'), document.getElementById('u30'), document.getElementById('u31'), document.getElementById('u32'), document.getElementById('u33'), document.getElementById('u34'), document.getElementById('u35'), document.getElementById('u36'), document.getElementById('u37'), document.getElementById('u38'), document.getElementById('u39'), document.getElementById('u40'), document.getElementById('u41'), document.getElementById('u42'), document.getElementById('u43'), document.getElementById('u44'), document.getElementById('u45'), document.getElementById('u46'), document.getElementById('u47'), document.getElementById('u48'), document.getElementById('u49'), document.getElementById('u50'), document.getElementById('u51'), document.getElementById('u52'), document.getElementById('u53'), document.getElementById('u54'), document.getElementById('u55'), document.getElementById('u56'), document.getElementById('u57'), document.getElementById('u58'), document.getElementById('u59'), document.getElementById('u60'), document.getElementById('u61'), document.getElementById('u62'), document.getElementById('u63'), document.getElementById('u64'), document.getElementById('u65'), document.getElementById('u66'), document.getElementById('u67'), document.getElementById('u68'), document.getElementById('u69'), document.getElementById('u70'), document.getElementById('u71'), document.getElementById('u72'), document.getElementById('u73'), document.getElementById('u74'), document.getElementById('u75'), document.getElementById('u76'), document.getElementById('u77'), document.getElementById('u78'), document.getElementById('u79'), document.getElementById('u80'), document.getElementById('u81'), document.getElementById('u82'), document.getElementById('u83'), document.getElementById('u84'), document.getElementById('u85'), document.getElementById('u86'), document.getElementById('u87'), document.getElementById('u88'), document.getElementById('u89'), document.getElementById('u90'), document.getElementById('u91'), document.getElementById('u92'), document.getElementById('u93'), document.getElementById('u94'), document.getElementById('u95'), document.getElementById('u96'), document.getElementById('u97'), document.getElementById('u98'), document.getElementById('u99')];
+var elementsDisplay = [];
+var upgradesDisplay = [];
 
 // var upgradesAvailable = 0;
 
@@ -26,6 +26,12 @@ var GetRate = [0, 0, 0, 0, 0];
 var resAmounts = [10000, 10000, 10000, 10000, 5000];
 var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
 var updateRates = [null, null, null, null, null];
+
+// var settings = [false, //Butt Replace
+// 				false, 
+// 				false,
+// 				false,
+// 				false];
 
 
 var buyAmount = 10;
@@ -67,6 +73,9 @@ class Elem {
 		this.cost  	  = [goldC, woodC, stoneC, metalC, cropC];
 		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
 		this.quantity = 0;
+		this.initialCost = [goldC, woodC, stoneC, metalC, cropC];
+
+		this.costScale = 1.025;
 
 		this.upgrades = [];
 		this.sendData();
@@ -86,9 +95,11 @@ class Elem {
 
 		if(canBuy) {
 			this.quantity+=1;
+
 			for(let i = 0; i < this.cost.length; i++) {
 				resAmounts[i] -= this.cost[i];
 			}
+
 			update();
 			this.sendData();
 			workerUpdate();
@@ -114,10 +125,14 @@ class Elem {
 		var eName = document.getElementsByClassName(this.getName()+'Name');
 		var eQuantity = document.getElementsByClassName(this.getName()+'Quantity');
 
+		for (let i = 0; i < this.cost.length; i++) {
+			this.cost[i] = Math.round(this.initialCost[i] * Math.pow(this.costScale, this.quantity));
+			//alert(this.initialCost[i]+" "+this.costScale+" "+this.quantity);
+		}
+
 		for (let i = 0; i < eName.length; i++) {
 			eName[i].innerHTML = this.name;
 		}
-
 
 		for(let i = 0; i < eQuantity.length; i++) {
 			eQuantity[i].innerHTML = this.quantity;
@@ -242,6 +257,10 @@ var unlocks =  [
 				];
 
 
+for(let i = 0; i < elements.length; i++) {
+	elementsDisplay[i] = document.getElementById('e'+(i+1));
+}
+
 function update() {
 
 	showElements();
@@ -292,6 +311,8 @@ function update() {
 	// playerStats[2] = 0; //???
 	// playerStats[3] = 0; //???
 	// playerStats[4] = 0;
+
+	buttReplace();
 }	
 
 function workerUpdate() {
@@ -326,7 +347,7 @@ function workerUpdate() {
 		}
 	}
 	for(let i=0; i<GetRate.length; i++) {
-		document.getElementById('rate'+i).innerHTML = Math.round((GetRate[i]) * 100)/100;
+		document.getElementById('rate'+i).innerHTML = Math.round(GetRate[i]*100)/100;
 	}
 }
 
@@ -419,13 +440,6 @@ for(let i = 0; i < elements.length; i++) {
 	document.getElementById(elements[i].getName()+'Sell').onclick = function() {elements[i].sell();}
 }
 
-for(let i = 0; i < upgrades.length; i++) {
-	if(document.getElementById("upgrade"+i+"Buy") != null)
-	document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
-		upgrades[i].buy(); 
-	});
-}
-
 
 function openTab(thisClass, thisID, targetClass, targetID) {
 	var tabContent = document.getElementsByClassName(targetClass);
@@ -439,8 +453,46 @@ function openTab(thisClass, thisID, targetClass, targetID) {
 	document.getElementById(thisID).className = thisClass + " active";
 }
 
+
+function createUpgrades() {
+
+	for(let i = 0; i < upgrades.length; i++) {
+		let tableRef = document.getElementById("upgrades_table");
+		let firstRow = tableRef.getElementsByTagName("tbody")[0];
+		let newRow = tableRef.insertRow(tableRef.rows.length);
+		for(let j = 0; j < 3; j++) {
+			let newCells = newRow.insertCell(j);	
+		}
+
+		newRow.setAttribute("class", "upgrade_row");
+		newRow.setAttribute("id", "u"+i);
+
+		newRow.getElementsByTagName("td")[0].setAttribute("class", "upgrade"+i);
+		newRow.getElementsByTagName("td")[1].setAttribute("class", "upgrade"+i+"SubDesc");
+		newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
+
+		console.log(document.getElementById('upgrades_table').innerHTML);
+
+
+		upgradesDisplay[i] = document.getElementById('u'+i);
+
+		if(document.getElementById("upgrade"+i+"Buy") != null)	{
+			document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
+				upgrades[i].buy(); 
+			});
+		}
+	}
+}
+
+/* Settings Nonsense */
+
+function buttReplace() {
+	document.querySelector('h1').innerHTML = "Butts";
+}
+
 window.onload = function() {
 	windowLoaded = true;
 	setCaches();
 	update();
+	createUpgrades();
 }
