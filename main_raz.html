@@ -70,14 +70,25 @@
 				<tr>
 					<th>Upgrade</th>
 					<th>Effect</th>
+					<th>Description</th>
 					<th>Buy</th>
 				</tr>
 
 			</table>
 		</div>
 
-		<div id="shop" class="tab_content">
+		<div id="shop" class="tab_content" onkeydown="keyBuyAmount(event)" onkeyup="resetBuyAmount()">
 			<h2>Shop</h2>
+			
+			<table id="resource_table">
+				<tr><th><p class="resources" id="rhead"><b>Resources</b></p></th></tr>
+				<tr><td><p class="resources gold"></p></td></tr>
+				<tr><td><p class="resources wood"></p></td></tr>
+				<tr><td><p class="resources stone"></p></td></tr>
+				<tr><td><p class="resources metal"></p></td></tr>
+				<tr><td><p class="resources crop"></p></td></tr>
+			</table>
+
 			<table id="elements">
 				<colgroup>
 					<col width="125">
@@ -126,17 +137,6 @@
 					<td><a class="buy" id="FarmerBuy" href="javascript:void(0);">Buy</a></td>
 					<td><a class="sell" id="FarmerSell" href="javascript:void(0);">Sell</a></td>
 				</tr>
-			</table>
-
-
-
-			<table id="resource_table">
-				<tr><th><p class="resources" id="rhead"><b>Resources</b></p></th></tr>
-				<tr><td><p class="resources gold"></p></td></tr>
-				<tr><td><p class="resources wood"></p></td></tr>
-				<tr><td><p class="resources stone"></p></td></tr>
-				<tr><td><p class="resources metal"></p></td></tr>
-				<tr><td><p class="resources crop"></p></td></tr>
 			</table>
 		</div>
 

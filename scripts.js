@@ -34,48 +34,57 @@ var updateRates = [null, null, null, null, null];
 // 				false];
 
 
-var buyAmount = 10;
+var buyAmount = 1;
 var maxBuy = false;
 
 var razMiddleName = "";
 
 // Cost scales: 5, 10, 15, 20
 
-// document.addEventListener("keydown", function(event) {
-//   console.log(event.which);
+function keyBuyAmount(event) {
+  console.log(event.which);
 
-//   switch(event.which)
-//   {
-//   	case 16:
-//   	buyAmount = 10;
-//   	max = false;
-//   	break;
+  switch(event.which)
+  {
+  	case 16: {	//shift
+	  	buyAmount = 10;
+	  	max = false;
+	  	break;
+  	}	
 
-//   	case 18:
-//   	buyAmount = 100;
-//   	max = false;
-//   	break;
+  	case 18: {	//option
+	  	buyAmount = 100;
+	  	max = false;
+	  	break;
+	}
 
-//   	case 91:
-//   	max = true;
-//   	break;
+  	case 91: { //command
+	  	max = true;
+	  	break;
+ 	}
 
-//   	default:
-//   	buyAmount = 1;
-//   	max = false;
-//   }
-// });
+  	default:
+	  	buyAmount = 1;
+	  	max = false;
+  }
+}
+
+function resetBuyAmount() {
+  buyAmount = 1;
+  max = false;
+}
 
 
 class Elem {
-	constructor(name, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
 		this.name  	  = name;
+		this.desc 	  = desc;
 		this.cost  	  = [goldC, woodC, stoneC, metalC, cropC];
 		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
 		this.quantity = 0;
 		this.initialCost = [goldC, woodC, stoneC, metalC, cropC];
 
-		this.costScale = 1.025;
+		this.costScale = 1.05;
 
 		this.upgrades = [];
 		this.sendData();
@@ -86,7 +95,7 @@ class Elem {
 		var missing = " ";
 		var numInvalid = 0;
 		for(let i=0; i < this.cost.length; i++) {
-			if(resAmounts[i]<this.cost[i]) {
+			if(resAmounts[i] < this.cost[i]) {
 				canBuy = false;
 				numInvalid++;
 				missing = missing + resources[i] + ", ";
@@ -94,7 +103,7 @@ class Elem {
 		}
 
 		if(canBuy) {
-			this.quantity+=1;
+			this.quantity+=buyAmount;
 
 			for(let i = 0; i < this.cost.length; i++) {
 				resAmounts[i] -= this.cost[i];
@@ -110,8 +119,8 @@ class Elem {
 	}
 
 	sell() {
-		if(this.quantity > 0) {
-			this.quantity -= 1;
+		if(this.quantity >= buyAmount) {
+			this.quantity -= buyAmount;
 			for(let i = 0; i < this.cost.length;i++) {
 				resAmounts[i]+=Math.floor(this.cost[i]/2);
 			}
@@ -124,9 +133,21 @@ class Elem {
 	sendData() {
 		var eName = document.getElementsByClassName(this.getName()+'Name');
 		var eQuantity = document.getElementsByClassName(this.getName()+'Quantity');
+		var c = [];
 
 		for (let i = 0; i < this.cost.length; i++) {
 			this.cost[i] = Math.round(this.initialCost[i] * Math.pow(this.costScale, this.quantity));
+			c[i] = this.initialCost[i] * Math.pow(this.costScale, this.quantity);
+
+			if(buyAmount >= 1)
+			{
+				for(let j = 0; j < buyAmount-1; j++)
+				{
+					this.cost[i] += c[i] * Math.pow(this.costScale, j);
+				}
+
+				this.cost[i] = Math.round(this.cost[i]);
+			}
 			//alert(this.initialCost[i]+" "+this.costScale+" "+this.quantity);
 		}
 
@@ -143,6 +164,7 @@ class Elem {
 	}
 
 	getCost() {return this.cost;}
+	getDesc() {return this.desc;}
 	getQuantity() {return this.quantity;}
 	getName() {return this.name.replace(/\s/g, '');}
 }
@@ -183,34 +205,34 @@ class Upgrade extends Unlock {
 	}
 
 	sendData() {
-		var uID = document.getElementsByClassName("upgrade"+this.getID());
-		var uDesc = document.getElementsByClassName("upgrade"+this.getID()+"Desc");
-		var uSubDesc = document.getElementsByClassName("upgrade"+this.getID()+"SubDesc");
+		// var uID = document.getElementsByClassName("upgrade"+this.getID());
+		// var uDesc = document.getElementsByClassName("upgrade"+this.getID()+"Desc");
+		// var uSubDesc = document.getElementsByClassName("upgrade"+this.getID()+"SubDesc");
 
-		for(let i = 0; i < uID.length; i++) {
-			uID[i].innerHTML = this.name;
-		}
+		// for(let i = 0; i < uID.length; i++) {
+		// 	uID[i].innerHTML = this.name;
+		// }
 
-		for(let i = 0; i < uDesc.length; i++) {
-			uDesc[i].innerHTML = this.desc;
-		}
+		// for(let i = 0; i < uDesc.length; i++) {
+		// 	uDesc[i].innerHTML = this.desc;
+		// }
 
-		for(let i = 0; i < uSubDesc.length; i++) {
-			uSubDesc[i].innerHTML = this.subDesc;
-		}
+		// for(let i = 0; i < uSubDesc.length; i++) {
+		// 	uSubDesc[i].innerHTML = this.subDesc;
+		// }
 		
-		document.getElementById("upgrade"+this.getID()+'Buy').innerHTML = this.cost;
+		// document.getElementById("upgrade"+this.getID()+'Buy').innerHTML = this.cost;
 	}
 
 	getID() {return this.id;}
 	getCost() {return this.goldC;}
 }
 
-var elements = [new Elem('Gold Miner', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
-				new Elem('Lumberjack', 50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
-				new Elem('Stonecutter', 100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
-				new Elem('Iron Miner', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
-				new Elem('Farmer', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
+var elements = [new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
+				new Elem('Lumberjack', 'temp',  50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
+				new Elem('Stonecutter', 'temp',  100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
+				new Elem('Iron Miner', 'temp', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
+				new Elem('Farmer', 'temp', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
 				
 var upgrades = [
 				//Gold Miners
@@ -232,7 +254,7 @@ var upgrades = [
 				new Upgrade('Catastrophically Chiseled Chisels', "The FDA is investigating your chisels for performance-enhancing drug use...", "Stonecutters are 2x as efficient!", 25000, 2, 250, 1, 1, 2, 1, 1),
 
 				//Iron Miners
-				new Upgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforce picks?", "Iron Miners are 2x as efficient!", 100, 3, 5, 1, 1, 1, 2, 1),
+				new Upgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforced picks?", "Iron Miners are 2x as efficient!", 100, 3, 5, 1, 1, 1, 2, 1),
 				new Upgrade('Super Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 500, 3, 25, 1, 1, 1, 2, 1),
 				new Upgrade('Incredibly Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 5000, 3, 100, 1, 1, 1, 2, 1),
 				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 3, 250, 1, 1, 1, 2, 1),
@@ -271,21 +293,6 @@ function update() {
 		elements[i].sendData();
 	}
 
-	for(let i = 0; i < upgrades.length; i++) {
-		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
-			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
-		}
-
-		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
-			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
-		}
-
-
-		if(document.getElementById("upgrade"+i+"Buy")) {
-			document.getElementById("upgrade"+i+"Buy").innerHTML = upgrades[i].getCost();
-		}
-	}
-
 	var repNames = [resources[0] + ": " + resAmounts[0], 
 					resources[1] + ": " + resAmounts[1],
 					resources[2] + ": " + resAmounts[2],
@@ -312,7 +319,7 @@ function update() {
 	// playerStats[3] = 0; //???
 	// playerStats[4] = 0;
 
-	buttReplace();
+	// buttReplace();
 }	
 
 function workerUpdate() {
@@ -455,12 +462,12 @@ function openTab(thisClass, thisID, targetClass, targetID) {
 
 
 function createUpgrades() {
+	let tableRef = document.getElementById("upgrades_table");
 
 	for(let i = 0; i < upgrades.length; i++) {
-		let tableRef = document.getElementById("upgrades_table");
 		let firstRow = tableRef.getElementsByTagName("tbody")[0];
 		let newRow = tableRef.insertRow(tableRef.rows.length);
-		for(let j = 0; j < 3; j++) {
+		for(let j = 0; j < 4; j++) {
 			let newCells = newRow.insertCell(j);	
 		}
 
@@ -469,12 +476,24 @@ function createUpgrades() {
 
 		newRow.getElementsByTagName("td")[0].setAttribute("class", "upgrade"+i);
 		newRow.getElementsByTagName("td")[1].setAttribute("class", "upgrade"+i+"SubDesc");
-		newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
-
-		console.log(document.getElementById('upgrades_table').innerHTML);
-
+		newRow.getElementsByTagName("td")[2].setAttribute("class", "upgrade"+i+"Desc");
+		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
 
 		upgradesDisplay[i] = document.getElementById('u'+i);
+
+		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
+			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
+		}
+
+		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
+			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
+		}
+
+		for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
+			document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
+		}
+
+		document.getElementById("upgrade"+i+"Buy").innerHTML = upgrades[i].getCost();
 
 		if(document.getElementById("upgrade"+i+"Buy") != null)	{
 			document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
@@ -486,13 +505,10 @@ function createUpgrades() {
 
 /* Settings Nonsense */
 
-function buttReplace() {
-	document.querySelector('h1').innerHTML = "Butts";
-}
-
 window.onload = function() {
 	windowLoaded = true;
+	createUpgrades();
 	setCaches();
 	update();
-	createUpgrades();
+
 }

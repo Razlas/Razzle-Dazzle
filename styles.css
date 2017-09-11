@@ -9,8 +9,12 @@ body {
 	max-width: 1200px;
 }
 
-*::selection { /* '*' means everything */
-	background: silver;
+*:not(a):not(button)::selection { /* '*' means everything */
+	background: gold;
+}
+
+a::selection, button::selection {
+	background: none;
 }
 
 a, a.element {
@@ -40,15 +44,14 @@ table {
 	border-collapse: collapse;
 	background-color: lightgrey;
 	display: table;
-	float: right;
+	border: 1px solid black;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 
 td, th {
 	padding: 5px;
-}
-
-table#elements, th, td {
 	text-align: center;
 	border: 1px solid black;
 }
@@ -100,7 +103,7 @@ table#resource_table {
 }
 
 
-#resource_table tr:nth-child(even), #upgrades_table tr:nth-child(even) {
+#resource_table tr:nth-child(even), #upgrades_table tr:nth-child(even){
 	background-color: #EEEEEE;
 
 }
