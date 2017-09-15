@@ -8,7 +8,7 @@ var upgradesDisplay = [];
 // var upgradesAvailable = 0;
 
 var windowLoaded = false;
-var clearAll = true;
+var clearAll = false; 
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -16,7 +16,6 @@ var clearAll = true;
 	Lumberjacks: Reinforced Lumber Axes (Profit 1.5x)
 	Stonecutter: Reinforced Chisels (Profit 1.5x)
 	IronMiner: Reinforced Picks (Profit 1.5x) 
-
 	Blacksmiths:	Chef: 							
 */
 
@@ -41,11 +40,10 @@ var razMiddleName = "";
 
 // Cost scales: 5, 10, 15, 20
 
-function keyBuyAmount(event) {
+document.addEventListener("keydown", function keyBuyAmount(event) {
   console.log(event.which);
 
-  switch(event.which)
-  {
+  switch(event.which) {
   	case 16: {	//shift
 	  	buyAmount = 10;
 	  	max = false;
@@ -67,13 +65,16 @@ function keyBuyAmount(event) {
 	  	buyAmount = 1;
 	  	max = false;
   }
-}
 
-function resetBuyAmount() {
+  update();
+});
+
+document.addEventListener("keyup", function resetBuyAmount() {
   buyAmount = 1;
   max = false;
-}
 
+  update();
+});
 
 class Elem {
 	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
@@ -179,7 +180,8 @@ class Unlock {
 		this.unlocked = false;
 	}
 
-	isUnlocked() {return this.unlocked;}
+
+	isUnlocked() {return this.name;}
 	getFullName() {return this.name;}
 	getName() {return this.name.replace(/\s/g, '');}
 	getDesc() {return this.desc;}
@@ -193,7 +195,7 @@ class Upgrade extends Unlock {
 		this.goldC = goldC;
 		this.scales = [goldPScale, woodPScale, stonePScale, metalPScale, cropPScale];
 		this.unlocked = false;
-		this.id = this.id;
+		// this.id = this.id;
 	}
 
 	buy() {
@@ -236,7 +238,7 @@ var elements = [new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0
 				
 var upgrades = [
 				//Gold Miners
-				new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", 100, 0, 5, 2, 1, 1, 1, 1), //Price, Ref, Trigger, Multiplier
+				new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", 100, 0, 5, 2, 1, 1, 1, 1),  //Price, Ref, Trigger, Multiplier
 				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", 500, 0, 25, 2, 1, 1, 1, 1),
 				new Upgrade('Incredibly Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", 5000, 0, 100, 2, 1, 1, 1, 1),
 				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", 25000, 0, 250, 2, 1, 1, 1, 1),
@@ -246,7 +248,11 @@ var upgrades = [
 				new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", "Lumberjacks are 2x as efficient!", 500, 1, 25, 1, 2, 1, 1, 1),
 				new Upgrade('Incredibly Sharp Lumber Axes', "Your axes feel...incredibly sharp!", "Lumberjacks are 2x as efficient!", 5000, 1, 100, 1, 2, 1, 1, 1),
 				new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", "Lumberjacks are 2x as efficient!", 25000, 1, 250, 1, 2, 1, 1, 1),
-				
+				new Upgrade('Fast Jacking', "Your lumberjacks sure get the job done quick!", "Lumberjacks are 2x as efficient!", 100000, 1, 500, 1, 2, 1, 1, 1),
+				new Upgrade('Super Fast Jacking', "Your lumberjacks are really adept at...gathering wood!", "Lumberjacks are 2x as efficient!", 1000000, 1, 1000, 1, 2, 1, 1, 1),
+				new Upgrade('Insanely Fast Jacking', "You've never seen a lumberjack this effective!", "Lumberjacks are 2x as effecient!", 50000000, 1, 1250, 1, 2, 1, 1, 1),
+				new Upgrade('Master of Jacking', "You're a master of your craft", "Lumberjacks are 2x as effecient!", 250000000, 1, 1500, 1, 2, 1, 1, 1),
+
 				//Stonecutters
 				new Upgrade('Chiseled Chisels', "Your chisels...have abs now?", "Stonecutters are 2x as efficient!", 100, 2, 5, 1, 1, 2, 1, 1),
 				new Upgrade('Crazy Chiseled Chisels', "Okay, the abs have abs too?", "Stonecutters are 2x as efficient!", 500, 2, 25, 1, 1, 2, 1, 1),
@@ -260,10 +266,10 @@ var upgrades = [
 				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 3, 250, 1, 1, 1, 2, 1),
 
 				//Farmers
-				new Upgrade('[Hoes1]', "[HoeDesc1]", "Farmers are 2x as efficient!", 100, 4, 5, 1, 1, 1, 1, 2),
-				new Upgrade('[Hoes2]', "[HoeDesc2]", "Farmers are 2x as efficient!", 500, 4, 25, 1, 1, 1, 1, 2),
-				new Upgrade('[Hoes3]', "[HoeDesc3]", "Farmers are 2x as efficient!", 5000, 4, 100, 1, 1, 1, 1, 2),
-				new Upgrade('[Hoes4]', "[HoeDesc4]", "Farmers are 2x as efficient!", 25000, 4, 250, 1, 1, 1, 1, 2),
+				new Upgrade('Holy Hoes', "Our farmers, who art in heaven...hallowed be thy tools...", "Farmers are 2x as efficient!", 100, 4, 5, 1, 1, 1, 1, 2),
+				new Upgrade('Holier Hoes', "Thy harvst come, thy will be done...", "Farmers are 2x as efficient!", 500, 4, 25, 1, 1, 1, 1, 2),
+				new Upgrade('Even Holier Hoes', "Give us this day our daily crop...", "Farmers are 2x as efficient!", 5000, 4, 100, 1, 1, 1, 1, 2),
+				new Upgrade('Holiest Hoes', "And forgive us our GMOs...", "Farmers are 2x as efficient!", 25000, 4, 250, 1, 1, 1, 1, 2),
 
 				];
 
@@ -368,7 +374,6 @@ function resourcesUpdate(i) {
 }
 
 function showElements() {
-
 	for(let i = 0; i < elements.length - 1; i++) {
 		if(elements[i].getQuantity() >= 5) {
 			elementsDisplay[i].style.display = 'table-row';
@@ -377,10 +382,10 @@ function showElements() {
 
 	for(let i = 0; i < upgrades.length; i++) {
 		if(upgradesDisplay[i]!==null){
-			if(upgrades[i].isUnlocked() === true) {
+			if(upgrades[i].unlocked == true) {
 				upgradesDisplay[i].style.display = 'none';
 			} else if(elements[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
-				upgradesDisplay[i].style.display = 'table-row';
+				upgradesDisplay[i].style.display="table-row";
 			} 
 		}
 	}
@@ -402,7 +407,7 @@ function setCaches() {
 		}
 
 
-		for(let i=0; i<upgrades.length; i++) {
+		for(let i=0; i < upgrades.length; i++) {
 			unlockedUpgrades[i] = Number(upgrades[i].unlocked);
 		}
 
@@ -432,12 +437,13 @@ function setCaches() {
 		} else {
 			parsedUnlockedUpgrades = JSON.parse(localStorage.getItem("upgrades"))
 			for(let i = 0; i < parsedUnlockedUpgrades.length; i++) {
-				upgrades[i].unlocked = parsedUnlockedUpgrades[i];
+				upgrades[i].unlocked = parsedUnlockedUpgrades[i]; 
 			}
+
+			console.log(parsedUnlockedUpgrades);
 		}
 
 		windowLoaded = !windowLoaded;
-
 	}
 }
 
@@ -471,6 +477,7 @@ function createUpgrades() {
 			let newCells = newRow.insertCell(j);	
 		}
 
+
 		newRow.setAttribute("class", "upgrade_row");
 		newRow.setAttribute("id", "u"+i);
 
@@ -481,9 +488,12 @@ function createUpgrades() {
 
 		upgradesDisplay[i] = document.getElementById('u'+i);
 
+
+
 		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
 			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
 		}
+
 
 		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
 			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
@@ -507,8 +517,7 @@ function createUpgrades() {
 
 window.onload = function() {
 	windowLoaded = true;
-	createUpgrades();
 	setCaches();
+	createUpgrades();
 	update();
-
 }
