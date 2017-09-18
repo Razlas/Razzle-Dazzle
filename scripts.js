@@ -8,7 +8,7 @@ var upgradesDisplay = [];
 // var upgradesAvailable = 0;
 
 var windowLoaded = false;
-var clearAll = false; 
+var clearAll = true; 
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -76,46 +76,43 @@ document.addEventListener("keyup", function resetBuyAmount() {
   update();
 });
 
-class Elem {
-	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
-		this.name  	  = name;
-		this.desc 	  = desc;
-		this.cost  	  = [goldC, woodC, stoneC, metalC, cropC];
-		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
-		this.quantity = 0;
+function subtractPrice(cost) {
+	let canBuy = true;
+	let missing = " ";
+	for(let i=0; i < cost.length; i++) {
+		if(resAmounts[i] < cost[i]) {
+			canBuy = false;
+			missing = missing + resources[i] + ", ";
+		}
+	}
+	if(canBuy) {
+		for(let i = 0; i < cost.length; i++) {
+			resAmounts[i] -= cost[i];
+		}
+	} else {
+		missing = missing.substring(0, missing.length - 2);
+		alert("You do not have enough" + missing);
+	}
+	return(canBuy);
+}
+
+class Unit {
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC) {
+		this.name = name;
+		this.desc = desc;
+		this.cost = [goldC, woodC, stoneC, metalC, cropC];
 		this.initialCost = [goldC, woodC, stoneC, metalC, cropC];
-
+		this.quantity = 0;
 		this.costScale = 1.05;
-
-		this.upgrades = [];
-		this.sendData();
 	}
 
 	buy() {
-		var canBuy = true;
-		var missing = " ";
-		var numInvalid = 0;
-		for(let i=0; i < this.cost.length; i++) {
-			if(resAmounts[i] < this.cost[i]) {
-				canBuy = false;
-				numInvalid++;
-				missing = missing + resources[i] + ", ";
-			}
-		}
-
-		if(canBuy) {
+		if(subtractPrice(this.cost)) {
 			this.quantity+=buyAmount;
-
-			for(let i = 0; i < this.cost.length; i++) {
-				resAmounts[i] -= this.cost[i];
-			}
-
 			update();
 			this.sendData();
 			workerUpdate();
-		} else {
-			missing = missing.substring(0, missing.length - 2);
-			alert("You do not have enough" + missing);
+			armyUpdate();
 		}
 	}
 
@@ -128,6 +125,7 @@ class Elem {
 			update();
 			this.sendData();
 			workerUpdate();
+			armyUpdate();
 		}
 	}
 
@@ -149,7 +147,6 @@ class Elem {
 
 				this.cost[i] = Math.round(this.cost[i]);
 			}
-			//alert(this.initialCost[i]+" "+this.costScale+" "+this.quantity);
 		}
 
 		for (let i = 0; i < eName.length; i++) {
@@ -168,6 +165,29 @@ class Elem {
 	getDesc() {return this.desc;}
 	getQuantity() {return this.quantity;}
 	getName() {return this.name.replace(/\s/g, '');}
+}
+
+class Elem extends Unit {
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
+		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
+
+		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
+		this.costScale = 1.05;
+
+		this.upgrades = [];
+		this.sendData();
+	}
+}
+
+class ArmyUnit extends Unit {
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, power) { //All of those are self explanatory except for power, which would be the amount it adds to strength. I haven't fully thought through how I want that part to work.
+		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
+		
+		this.power = power;
+		this.costScale = 1.05;
+
+		this.sendData();
+	}
 }
 
 class Unlock {
@@ -205,36 +225,20 @@ class Upgrade extends Unlock {
  			update();
 		} else alert("You do not have enough gold to purchase this upgrade");
 	}
-
-	sendData() {
-		// var uID = document.getElementsByClassName("upgrade"+this.getID());
-		// var uDesc = document.getElementsByClassName("upgrade"+this.getID()+"Desc");
-		// var uSubDesc = document.getElementsByClassName("upgrade"+this.getID()+"SubDesc");
-
-		// for(let i = 0; i < uID.length; i++) {
-		// 	uID[i].innerHTML = this.name;
-		// }
-
-		// for(let i = 0; i < uDesc.length; i++) {
-		// 	uDesc[i].innerHTML = this.desc;
-		// }
-
-		// for(let i = 0; i < uSubDesc.length; i++) {
-		// 	uSubDesc[i].innerHTML = this.subDesc;
-		// }
-		
-		// document.getElementById("upgrade"+this.getID()+'Buy').innerHTML = this.cost;
-	}
-
+	
 	getID() {return this.id;}
 	getCost() {return this.goldC;}
 }
 
 var elements = [new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
-				new Elem('Lumberjack', 'temp',  50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
+			 	new Elem('Lumberjack', 'temp',  50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 'temp',  100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
 				new Elem('Iron Miner', 'temp', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
 				new Elem('Farmer', 'temp', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
+
+var army 	 = [new ArmyUnit('Foot Soldier', 'temp', 10, 10, 10, 10, 5, 1),
+				new ArmyUnit('Archer', 'temp', 50, 50, 50, 50, 25, 2),
+				new ArmyUnit('Cannon', 'temp', 500, 500, 500, 500, 250, 10)];
 				
 var upgrades = [
 				//Gold Miners
@@ -297,6 +301,9 @@ function update() {
 
 	for(let i = 0; i < elements.length; i++) {
 		elements[i].sendData();
+	}
+	for(let i = 0; i < army.length; i++) {
+		army[i].sendData();
 	}
 
 	var repNames = [resources[0] + ": " + resAmounts[0], 
@@ -364,6 +371,13 @@ function workerUpdate() {
 	}
 }
 
+function armyUpdate() {
+	playerStats[0]=0;
+	for(let i=0; i<army.length; i++) {
+		playerStats[0]+=army[i].power*army[i].quantity;
+	}
+}
+
 function resourcesUpdate(i) {
 	if(GetRate[i]!== 0){
 		if(GetRate[i] > 0) {
@@ -392,25 +406,31 @@ function showElements() {
 }
 
 function setCaches() {
-	let elemQuan = []; 
+	let elemQuan = [];
+	let armyQuan = []; 
 	let unlockedUpgrades = [];
 
 	if(clearAll) {
+		localStorage.removeItem("army");
 		localStorage.removeItem("elements");
 		localStorage.removeItem("resources");
 		localStorage.removeItem("upgrades");
 	}
 
 	if(!windowLoaded) {
+		for(let i = 0; i < army.length; i++) {
+			armyQuan[i] = army[i].getQuantity();
+		}
+
 		for(let i = 0; i < elements.length; i++) {
 			elemQuan[i] = elements[i].getQuantity();
 		}
-
 
 		for(let i=0; i < upgrades.length; i++) {
 			unlockedUpgrades[i] = Number(upgrades[i].unlocked);
 		}
 
+		localStorage.army = JSON.stringify(armyQuan);
 		localStorage.elements = JSON.stringify(elemQuan);
 		localStorage.resources = JSON.stringify(resAmounts);
 		localStorage.upgrades = JSON.stringify(unlockedUpgrades);
@@ -423,6 +443,15 @@ function setCaches() {
 			parsedElemQuan = JSON.parse(localStorage.getItem("elements"));
 			for(let i = 0; i < parsedElemQuan.length; i++) {
 				elements[i].quantity = parsedElemQuan[i];
+			}
+		}
+
+		if(!localStorage.getItem("army")) {
+			localStorage.setItem("army", JSON.stringify(armyQuan));
+		} else {
+			parsedArmyQuan = JSON.parse(localStorage.getItem("army"));
+			for(let i = 0; i < parsedArmyQuan.length; i++) {
+				army[i].quantity = parsedArmyQuan[i];
 			}
 		}
 
@@ -451,6 +480,11 @@ function setCaches() {
 for(let i = 0; i < elements.length; i++) {
 	document.getElementById(elements[i].getName()+'Buy').onclick = function() {elements[i].buy();}
 	document.getElementById(elements[i].getName()+'Sell').onclick = function() {elements[i].sell();}
+}
+
+for(let i = 0; i < army.length; i++) {
+	document.getElementById(army[i].getName()+'Buy').onclick = function() {army[i].buy();}
+	document.getElementById(army[i].getName()+'Sell').onclick = function() {army[i].sell();}
 }
 
 
