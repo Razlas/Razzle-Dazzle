@@ -172,7 +172,6 @@ class Elem extends Unit {
 		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
 
 		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
-		this.costScale = 1.05;
 
 		this.upgrades = [];
 		this.sendData();
@@ -180,7 +179,7 @@ class Elem extends Unit {
 }
 
 class ArmyUnit extends Unit {
-	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, power) { //All of those are self explanatory except for power, which would be the amount it adds to strength. I haven't fully thought through how I want that part to work.
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, power) {
 		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
 		
 		this.power = power;
@@ -209,13 +208,11 @@ class Unlock {
 }
 
 class Upgrade extends Unlock {
-	constructor(name, desc, subDesc, goldC, ref, trigger, goldPScale, woodPScale, stonePScale, metalPScale, cropPScale) {  //Scales
+	constructor(name, desc, subDesc, goldC, ref, trigger) {  //Scales
 		super(name, desc, subDesc, ref, trigger); //Same
 
 		this.goldC = goldC;
-		this.scales = [goldPScale, woodPScale, stonePScale, metalPScale, cropPScale];
 		this.unlocked = false;
-		// this.id = this.id;
 	}
 
 	buy() {
@@ -230,6 +227,22 @@ class Upgrade extends Unlock {
 	getCost() {return this.goldC;}
 }
 
+class ElemUpgrade extends Upgrade {
+	constructor(name, desc, subDesc, goldC, ref, trigger, goldPScale, woodPScale, stonePScale, metalPScale, cropPScale) {
+		super(name, desc, subDesc, goldC, ref, trigger);
+
+		this.scales = [goldPScale, woodPScale, stonePScale, metalPScale, cropPScale];
+	}
+}
+
+class ArmyUpgrade extends Upgrade {
+	constructor(name, desc, subDesc, goldC, ref, trigger, scale) {
+		super(name, desc, subDesc, goldC, ref, trigger);
+
+		this.scale = scale;
+	}
+}
+
 var elements = [new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
 			 	new Elem('Lumberjack', 'temp',  50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 'temp',  100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
@@ -240,42 +253,62 @@ var army 	 = [new ArmyUnit('Foot Soldier', 'temp', 10, 10, 10, 10, 5, 1),
 				new ArmyUnit('Archer', 'temp', 50, 50, 50, 50, 25, 2),
 				new ArmyUnit('Cannon', 'temp', 500, 500, 500, 500, 250, 10)];
 				
-var upgrades = [
+let elemUpgrades = [
 				//Gold Miners
-				new Upgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", 100, 0, 5, 2, 1, 1, 1, 1),  //Price, Ref, Trigger, Multiplier
-				new Upgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", 500, 0, 25, 2, 1, 1, 1, 1),
-				new Upgrade('Incredibly Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", 5000, 0, 100, 2, 1, 1, 1, 1),
-				new Upgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", 25000, 0, 250, 2, 1, 1, 1, 1),
+				new ElemUpgrade('Reinforced Picks', "Your picks feel sturdier than ever!", "Gold Miners are 2x as efficient!", 100, 0, 5, 2, 1, 1, 1, 1),  //Price, Ref, Trigger, Multiplier
+				new ElemUpgrade('Super Reinforced Picks', "Your picks feel super sturdy!", "Gold Miners are 2x as efficient!", 500, 0, 25, 2, 1, 1, 1, 1),
+				new ElemUpgrade('Incredibly Reinforced Picks', "Your picks feel...incredibly sturdy!", "Gold Miners are 2x as efficient!", 5000, 0, 100, 2, 1, 1, 1, 1),
+				new ElemUpgrade('Unfathomably Reinforced Picks', "The might of your picks is indescribable...", "Gold Miners are 2x as efficient!", 25000, 0, 250, 2, 1, 1, 1, 1),
 
 				//Lumberjacks
-				new Upgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", "Lumberjacks are 2x as efficient!", 100, 1, 5, 1, 2, 1, 1, 1), 
-				new Upgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", "Lumberjacks are 2x as efficient!", 500, 1, 25, 1, 2, 1, 1, 1),
-				new Upgrade('Incredibly Sharp Lumber Axes', "Your axes feel...incredibly sharp!", "Lumberjacks are 2x as efficient!", 5000, 1, 100, 1, 2, 1, 1, 1),
-				new Upgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", "Lumberjacks are 2x as efficient!", 25000, 1, 250, 1, 2, 1, 1, 1),
-				new Upgrade('Fast Jacking', "Your lumberjacks sure get the job done quick!", "Lumberjacks are 2x as efficient!", 100000, 1, 500, 1, 2, 1, 1, 1),
-				new Upgrade('Super Fast Jacking', "Your lumberjacks are really adept at...gathering wood!", "Lumberjacks are 2x as efficient!", 1000000, 1, 1000, 1, 2, 1, 1, 1),
-				new Upgrade('Insanely Fast Jacking', "You've never seen a lumberjack this effective!", "Lumberjacks are 2x as effecient!", 50000000, 1, 1250, 1, 2, 1, 1, 1),
-				new Upgrade('Master of Jacking', "You're a master of your craft", "Lumberjacks are 2x as effecient!", 250000000, 1, 1500, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Sharpened Lumber Axes', "Your axes feel sharper than ever!", "Lumberjacks are 2x as efficient!", 100, 1, 5, 1, 2, 1, 1, 1), 
+				new ElemUpgrade('Super Sharp Lumber Axes', "Your axes feel super sharp!", "Lumberjacks are 2x as efficient!", 500, 1, 25, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Incredibly Sharp Lumber Axes', "Your axes feel...incredibly sharp!", "Lumberjacks are 2x as efficient!", 5000, 1, 100, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Unfathomably Sharp Lumber Axes', "The blades of your axes glint with indescribable menace...", "Lumberjacks are 2x as efficient!", 25000, 1, 250, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Fast Jacking', "Your lumberjacks sure get the job done quick!", "Lumberjacks are 2x as efficient!", 100000, 1, 500, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Super Fast Jacking', "Your lumberjacks are really adept at...gathering wood!", "Lumberjacks are 2x as efficient!", 1000000, 1, 1000, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Insanely Fast Jacking', "You've never seen a lumberjack this effective!", "Lumberjacks are 2x as effecient!", 50000000, 1, 1250, 1, 2, 1, 1, 1),
+				new ElemUpgrade('Master of Jacking', "You're a master of your craft", "Lumberjacks are 2x as effecient!", 250000000, 1, 1500, 1, 2, 1, 1, 1),
 
 				//Stonecutters
-				new Upgrade('Chiseled Chisels', "Your chisels...have abs now?", "Stonecutters are 2x as efficient!", 100, 2, 5, 1, 1, 2, 1, 1),
-				new Upgrade('Crazy Chiseled Chisels', "Okay, the abs have abs too?", "Stonecutters are 2x as efficient!", 500, 2, 25, 1, 1, 2, 1, 1),
-				new Upgrade('Colossally Chiseled Chisels', "These chisels are giving the stonecutters body image issues...", "Stonecutters are 2x as efficient!", 5000, 2, 100, 1, 1, 2, 1, 1),
-				new Upgrade('Catastrophically Chiseled Chisels', "The FDA is investigating your chisels for performance-enhancing drug use...", "Stonecutters are 2x as efficient!", 25000, 2, 250, 1, 1, 2, 1, 1),
+				new ElemUpgrade('Chiseled Chisels', "Your chisels...have abs now?", "Stonecutters are 2x as efficient!", 100, 2, 5, 1, 1, 2, 1, 1),
+				new ElemUpgrade('Crazy Chiseled Chisels', "Okay, the abs have abs too?", "Stonecutters are 2x as efficient!", 500, 2, 25, 1, 1, 2, 1, 1),
+				new ElemUpgrade('Colossally Chiseled Chisels', "These chisels are giving the stonecutters body image issues...", "Stonecutters are 2x as efficient!", 5000, 2, 100, 1, 1, 2, 1, 1),
+				new ElemUpgrade('Catastrophically Chiseled Chisels', "The FDA is investigating your chisels for performance-enhancing drug use...", "Stonecutters are 2x as efficient!", 25000, 2, 250, 1, 1, 2, 1, 1),
 
 				//Iron Miners
-				new Upgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforced picks?", "Iron Miners are 2x as efficient!", 100, 3, 5, 1, 1, 1, 2, 1),
-				new Upgrade('Super Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 500, 3, 25, 1, 1, 1, 2, 1),
-				new Upgrade('Incredibly Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 5000, 3, 100, 1, 1, 1, 2, 1),
-				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 3, 250, 1, 1, 1, 2, 1),
+				new ElemUpgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforced picks?", "Iron Miners are 2x as efficient!", 100, 3, 5, 1, 1, 1, 2, 1),
+				new ElemUpgrade('Super Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 500, 3, 25, 1, 1, 1, 2, 1),
+				new ElemUpgrade('Incredibly Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 5000, 3, 100, 1, 1, 1, 2, 1),
+				new ElemUpgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 3, 250, 1, 1, 1, 2, 1),
 
 				//Farmers
-				new Upgrade('Holy Hoes', "Our farmers, who art in heaven...hallowed be thy tools...", "Farmers are 2x as efficient!", 100, 4, 5, 1, 1, 1, 1, 2),
-				new Upgrade('Holier Hoes', "Thy harvst come, thy will be done...", "Farmers are 2x as efficient!", 500, 4, 25, 1, 1, 1, 1, 2),
-				new Upgrade('Even Holier Hoes', "Give us this day our daily crop...", "Farmers are 2x as efficient!", 5000, 4, 100, 1, 1, 1, 1, 2),
-				new Upgrade('Holiest Hoes', "And forgive us our GMOs...", "Farmers are 2x as efficient!", 25000, 4, 250, 1, 1, 1, 1, 2),
+				new ElemUpgrade('Holy Hoes', "Our farmers, who art in heaven...hallowed be thy tools...", "Farmers are 2x as efficient!", 100, 4, 5, 1, 1, 1, 1, 2),
+				new ElemUpgrade('Holier Hoes', "Thy harvst come, thy will be done...", "Farmers are 2x as efficient!", 500, 4, 25, 1, 1, 1, 1, 2),
+				new ElemUpgrade('Even Holier Hoes', "Give us this day our daily crop...", "Farmers are 2x as efficient!", 5000, 4, 100, 1, 1, 1, 1, 2),
+				new ElemUpgrade('Holiest Hoes', "And forgive us our GMOs...", "Farmers are 2x as efficient!", 25000, 4, 250, 1, 1, 1, 1, 2),
 
 				];
+
+let armyUpgrades = [
+				//Soldier Upgrades
+				new ArmyUpgrade('Knowledge of the Blade', "When you were partying, I studied the blade...", "Soldiers are 2x as powerful", 100, 0, 5, 2), //name, desc, subDesc, goldC, ref, trigger, scale
+				new ArmyUpgrade('Cultivation of Inner Strength', "While others pursued vanity, I cultivated inner strength", "Soldiers are 2x as powerful", 500, 0, 25, 2),
+				new ArmyUpgrade('Men At Arms', "Now that the world is on fire, you have the audacity to come to me for help?", "Soldiers are 2x as powerful", 5000, 0, 100, 2),
+				new ArmyUpgrade('The Art of War', "If you know the enemy and know yourself, you need not fear the result of a hundred battles.", "Soldiers are 2x as powerful", 25000, 0, 250, 2),
+
+				//Archer Upgrades
+				new ArmyUpgrade('Heavy Crossbows', "These shots sure do pack a wallop!", "Archers are 2x as powerful", 100, 1, 5, 2),
+				]
+
+var upgrades = []
+var upgradesCenter = elemUpgrades.length;
+
+for(let i=0; i<elemUpgrades.length+armyUpgrades.length; i++) {
+	if(i<elemUpgrades.length) {
+		upgrades[i]=elemUpgrades[i];
+	} else upgrades[i]=armyUpgrades[i-elemUpgrades.length];
+}
 
 
 
@@ -348,7 +381,7 @@ function workerUpdate() {
 				}
 				if(canAdd) {
 					let mult=1;
-					for(let l=0; l<upgrades.length; l++) {
+					for(let l=0; l<upgradesCenter; l++) {
 						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
 							mult*=upgrades[l].scales[i];
 						}
@@ -374,6 +407,12 @@ function workerUpdate() {
 function armyUpdate() {
 	playerStats[0]=0;
 	for(let i=0; i<army.length; i++) {
+		let mult=1;
+		for(let j=upgradesCenter; j<upgrades.length; j++) {
+			if(upgrades[j].ref==i&&upgrades[j].unlocked) {
+				mult*=upgrades[j].scale;
+			}
+		}
 		playerStats[0]+=army[i].power*army[i].quantity;
 	}
 }
@@ -398,9 +437,13 @@ function showElements() {
 		if(upgradesDisplay[i]!==null){
 			if(upgrades[i].unlocked == true) {
 				upgradesDisplay[i].style.display = 'none';
-			} else if(elements[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
+			} else if(i<upgradesCenter) {
+				if(elements[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
+					upgradesDisplay[i].style.display="table-row";
+				}
+			} else if(army[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
 				upgradesDisplay[i].style.display="table-row";
-			} 
+			}
 		}
 	}
 }
