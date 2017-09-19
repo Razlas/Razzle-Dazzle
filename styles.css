@@ -27,7 +27,7 @@ a, a.element {
 	transition: 0.5s;
 }
 
-a.buy:hover, a.sell:hover, .continue:hover, #razzle:hover, #dazzle:hover {
+a.buy:hover, a.sell:hover, .continue:hover {
 	background-color: gray;
 	color: white;
 	transition: 0.5s;

@@ -1,14 +1,10 @@
-var continueButton = document.getElementById('continue');
-var intro = document.getElementById('intro');
-var hiddenDiv = document.getElementById('hiddenDiv1');
-
 var elementsDisplay = [];
 var upgradesDisplay = [];
 
 // var upgradesAvailable = 0;
 
 var windowLoaded = false;
-var clearAll = true; 
+var clearAll = false; 
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -311,7 +307,6 @@ for(let i=0; i<elemUpgrades.length+armyUpgrades.length; i++) {
 }
 
 
-
 var unlocks =  [
 				new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", 0, 1),
 				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", 1, 1),
@@ -437,7 +432,7 @@ function showElements() {
 		if(upgradesDisplay[i]!==null){
 			if(upgrades[i].unlocked == true) {
 				upgradesDisplay[i].style.display = 'none';
-			} else if(i<upgradesCenter) {
+			} else if(i < upgradesCenter) {
 				if(elements[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
 					upgradesDisplay[i].style.display="table-row";
 				}

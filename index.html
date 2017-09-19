@@ -7,19 +7,19 @@
 
 	<body>
 		<h1>[Welcome]</h1>
+	
 		<div id="intro">
-		<p>By opening this site, you've entered into the world of Razzle Dazzle, an idle game following the brothers El. In just a moment, you may pick your character...but first, a few questions about yourself.</p>
+			<p>By opening this site, you've entered into the world of Razzle Dazzle, an idle game following the brothers El. In just a moment, you may pick your brother, with whom you will embark on this journey...</p>
+
+			<a class="continue" id="continue" href="javascript:void(0);">Continue</a>
 		</div>
-
-
-		<a class="continue" id="continue">Continue</a>
 	
 
 		<div class="hidden" id="hiddenDiv1">
 			<p>Very well, then. You've chosen to embark on this journey after all. Let me warn you, though—it won't be an easy one.<br><br>Chose which brother you wish to be:</p>
 
-			<a onclick="document.getElementById('hiddenDiv1').style.display = 'none'; document.getElementById('hiddenDiv2Raz').style.display = 'block';" id="razzle">Raz</a> 
-			<a onclick="document.getElementById('hiddenDiv1').style.display = 'none'; document.getElementById('hiddenDiv2Daz').style.display = 'block';" id="dazzle">Daz</a>
+			<a class="continue" id="razzle" href="javascript:void(0);">Raz</a> 
+			<a class="continue" id="dazzle" href="javascript:void(0);">Daz</a>
 
 		</div>
 
@@ -33,7 +33,6 @@
 			<p>Placeholder Daz</p>
 
 			<a class="continue" href="main_daz.html">Begin</a>
-
 		</div>
 
 
