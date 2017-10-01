@@ -79,7 +79,7 @@
 
 		<div id="shop" class="tab_content">
 			<h2>Shop</h2>
-			
+
 			<table id="resource_table">
 				<tr><th><p class="resources" id="rhead"><b>Resources</b></p></th></tr>
 				<tr><td><p class="resources gold"></p></td></tr>
@@ -89,11 +89,12 @@
 				<tr><td><p class="resources crop"></p></td></tr>
 			</table>
 
-			<table id="elements">
+			<table id="elements_table">
 				<colgroup>
 					<col width="125">
 					<col width="60">
 					<col width="100">
+					<col width="150">
 					<col width="150">
 				</colgroup>
 				<tr>
@@ -102,71 +103,37 @@
 					<th>Buy</th>
 					<th>Sell</th>
 				</tr>
-
-				<tr class="element_row" id="e0">
-					<td class="element FootSoldierName"></td>
-					<td class="FootSoldierQuantity"></td>
-					<td><a class="buy" id="FootSoldierBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="FootSoldierSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e0">
-					<td class="element ArcherName"></td>
-					<td class="ArcherQuantity"></td>
-					<td><a class="buy" id="ArcherBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="ArcherSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e0">
-					<td class="element CannonName"></td>
-					<td class="CannonQuantity"></td>
-					<td><a class="buy" id="CannonBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="CannonSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e0">
-					<td class="element GoldMinerName"></td>
-					<td class="GoldMinerQuantity"></td>
-					<td><a class="buy" id="GoldMinerBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="GoldMinerSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e1">
-					<td class="element LumberjackName"></td>
-					<td class="LumberjackQuantity"></td>
-					<td><a class="buy" id="LumberjackBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="LumberjackSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e2">
-					<td class="element StonecutterName"></td>
-					<td class="StonecutterQuantity"></td>
-					<td><a class="buy" id="StonecutterBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="StonecutterSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e3">
-					<td class="element IronMinerName"></td>
-					<td class="IronMinerQuantity"></td>
-					<td><a class="buy" id="IronMinerBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="IronMinerSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
-
-				<tr class="element_row" id="e4">
-					<td class="element FarmerName"></td>
-					<td class="FarmerQuantity"></td>
-					<td><a class="buy" id="FarmerBuy" href="javascript:void(0);">Buy</a></td>
-					<td><a class="sell" id="FarmerSell" href="javascript:void(0);">Sell</a></td>
-				</tr>
 			</table>
+
+			<br>
+			<button onclick="addResource(0, 1)">Produce Gold</button>
+			<button onclick="addResource(1, 1)">Produce Wood</button>
+			<button onclick="addResource(2, 1)">Produce Stone</button>
+			<button onclick="addResource(3, 1)">Produce Iron</button>
+			<button onclick="addResource(4, 1)">Produce Crop</button>
+
 		</div>
 
 		<div id="settings" class="tab_content">
-			<h2>Settings</h2>
-			<h3>Gameplay</h3>
+			<h2>Army</h2>
+	<!-- 		<h3>Gameplay</h3>
 			<h3>Misc</h3>
-
-			<h3>Experimental</h3>
+			<h3>Experimental</h3> -->
+			<table id="army_table">
+				<colgroup>
+					<col width="200">
+					<col width="60">
+					<col width="100">
+					<col width="150">
+					<col width="150">
+				</colgroup>
+				<tr>
+					<th>Name</th>
+					<th>#</th>
+					<th>Buy</th>
+					<th>Sell</th>
+				</tr>
+			</table>
 		</div>
 
 

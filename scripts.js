@@ -1,5 +1,6 @@
 var elementsDisplay = [];
 var upgradesDisplay = [];
+var armyDisplay = [];
 
 // var upgradesAvailable = 0;
 
@@ -16,11 +17,14 @@ var clearAll = false;
 */
 
 var resources  = ['Gold', 'Wood', 'Stone', 'Metal', 'Crop'];
-var SetRate = [0, 0, 0, 0, 0];
-var GetRate = [0, 0, 0, 0, 0];
+var setRate = [0, 0, 0, 0, 0];
+var getRate = [0, 0, 0, 0, 0];
 var resAmounts = [10000, 10000, 10000, 10000, 5000];
-var playerStats = [0, 0, 0, 0, 0]; //Strength, Luck, ???, ???, ???
+var armyStats = [0, 50, 0, 0, 0]; //Ranged Offense, Melee Offense, Ranged Defense, Melee Defense, Luck
+//Luck is between 0-100, where 0 is the worst luck possible and 100 is very good luck
 var updateRates = [null, null, null, null, null];
+
+var land = 0;
 
 // var settings = [false, //Butt Replace
 // 				false, 
@@ -32,7 +36,9 @@ var updateRates = [null, null, null, null, null];
 var buyAmount = 1;
 var maxBuy = false;
 
-var razMiddleName = "";
+var middleName = "";
+
+
 
 // Cost scales: 5, 10, 15, 20
 
@@ -97,6 +103,7 @@ class Unit {
 		this.name = name;
 		this.desc = desc;
 		this.cost = [goldC, woodC, stoneC, metalC, cropC];
+		this.sellCost = [goldC/2, woodC/2, stoneC/2, metalC/2, cropC/2];
 		this.initialCost = [goldC, woodC, stoneC, metalC, cropC];
 		this.quantity = 0;
 		this.costScale = 1.05;
@@ -139,49 +146,68 @@ class Unit {
 				for(let j = 0; j < buyAmount-1; j++)
 				{
 					this.cost[i] += c[i] * Math.pow(this.costScale, j);
+					this.sellCost[i] = this.cost[i];
 				}
 
 				this.cost[i] = Math.round(this.cost[i]);
+				this.sellCost[i] = Math.round(this.sellCost[i]);
 			}
 		}
-
-		for (let i = 0; i < eName.length; i++) {
-			eName[i].innerHTML = this.name;
-		}
-
-		for(let i = 0; i < eQuantity.length; i++) {
-			eQuantity[i].innerHTML = this.quantity;
-		}
-		
-		document.getElementById(this.getName()+'Buy').innerHTML = this.cost;
-		document.getElementById(this.getName()+'Sell').innerHTML = Math.floor(this.getCost()[0]/2) + "," + Math.floor(this.getCost()[1]/2) + "," + Math.floor(this.getCost()[2]/2) + "," + Math.floor(this.getCost()[3]/2) + "," + Math.floor(this.getCost()[4]/2);
 	}
 
 	getCost() {return this.cost;}
+	getSell() {return this.sellCost;}
 	getDesc() {return this.desc;}
 	getQuantity() {return this.quantity;}
+	getFullName() {return this.name;}
 	getName() {return this.name.replace(/\s/g, '');}
 }
+
+class Enemy  {
+	constructor() {
+		this.stats = [];
+		this.level = this.level;
+		this.name = this.name;
+		this.nameSuffixes = ["Fleet", "Squadron", "Party", "Divsision"]
+		this.postSuffix = this.nameSuffixes[this.difficulty];
+		this.origin = this.origin; //Daz, whatever the name of that other group on
+		this.generateStats();
+	} 
+
+	generateStats() {
+		let scale = land/10;
+
+		for(let i = 0; i < 4; i++)
+		{
+			this.stats[i] = scale * Math.random(0.9, 1.1);
+		}
+
+		this.stats[5] = 100 - armyStats[5];
+	}
+
+	generateName() {
+		this.name = this.originate + this.postSuffix;
+	}
+
+	getStats() {return this.stats};
+}
+
+var enemy = new Enemy();
 
 class Elem extends Unit {
 	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, goldP, woodP,  stoneP, metalP, cropP) {
 		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
 
 		this.produce  = [goldP, woodP, stoneP, metalP, cropP];
-
-		this.upgrades = [];
-		this.sendData();
 	}
 }
 
 class ArmyUnit extends Unit {
-	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, power) {
+	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC, power, type) {
 		super(name, desc, goldC, woodC, stoneC, metalC, cropC);
-		
-		this.power = power;
-		this.costScale = 1.05;
 
-		this.sendData();
+		this.power = power;
+		this.type = type;
 	}
 }
 
@@ -235,19 +261,43 @@ class ArmyUpgrade extends Upgrade {
 	constructor(name, desc, subDesc, goldC, ref, trigger, scale) {
 		super(name, desc, subDesc, goldC, ref, trigger);
 
-		this.scale = scale;
+		this.scales = scale;
 	}
 }
 
-var elements = [new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
+var elements = [
+				new Elem('Farmer', 'temp', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1),
+				new Elem('Gold Miner', 'temp', 10, 10, 10, 10, 5, 1, 0, 0, 0, -0.2), 
 			 	new Elem('Lumberjack', 'temp',  50, 50, 50, 50, 25, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 'temp',  100, 100, 100, 100, 50, 0, 0, 1, 0, -0.2), 
-				new Elem('Iron Miner', 'temp', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2),
-				new Elem('Farmer', 'temp', 50, 200, 100, 5, 10, 0, 0, 0, 0, 1)];
+				new Elem('Iron Miner', 'temp', 200, 200, 200, 200, 100, 0, 0, 0, 1, -0.2)
+			   ];
 
-var army 	 = [new ArmyUnit('Foot Soldier', 'temp', 10, 10, 10, 10, 5, 1),
-				new ArmyUnit('Archer', 'temp', 50, 50, 50, 50, 25, 2),
-				new ArmyUnit('Cannon', 'temp', 500, 500, 500, 500, 250, 10)];
+var army 	 = [ //(name, desc, goldC, woodC, stoneC, metalC, cropC, power, type)
+				 //Types: 0: Ranged Offense, 1: Melee Offense, 2: Ranged defense, 3: Melee Defense, 4: Priests/Luck
+				new ArmyUnit('Archer', 'temp', 10, 10, 10, 10, 5, 1, 0),
+				new ArmyUnit('Portable Cannon', 'temp', 50, 50, 50, 50, 25, 5, 0),
+
+				new ArmyUnit('Foot Soldier', 'temp', 10, 10, 10, 10, 5, 1, 1),
+				new ArmyUnit('Heavy Duty Soldiers', 'temp', 50, 50, 50, 50, 25, 3, 1),
+				
+				new ArmyUnit('Archer Tower', 'temp', 10, 10, 10, 10, 5, 1, 2),
+				new ArmyUnit('Heavy Duty Cannon', 'temp', 50, 50, 50, 50, 25, 3, 2),
+
+				new ArmyUnit('Barracks', 'temp', 10, 10, 10, 10, 5, 1, 3),
+				new ArmyUnit('Strong Walls', 'temp', 50, 50, 50, 50, 25, 3, 3),
+
+				new ArmyUnit('Priest', 'Blessed are the children of God', 1000, 1000, 1000, 1000, 5, 5, 4),
+				new ArmyUnit('Church', "church lmao", 50, 50, 50, 50, 25, 10, 4)
+
+			   ];
+
+
+var defenses = [
+			
+
+				];
+
 				
 let elemUpgrades = [
 				//Gold Miners
@@ -287,18 +337,32 @@ let elemUpgrades = [
 				];
 
 let armyUpgrades = [
-				//Soldier Upgrades
-				new ArmyUpgrade('Knowledge of the Blade', "When you were partying, I studied the blade...", "Soldiers are 2x as powerful", 100, 0, 5, 2), //name, desc, subDesc, goldC, ref, trigger, scale
-				new ArmyUpgrade('Cultivation of Inner Strength', "While others pursued vanity, I cultivated inner strength", "Soldiers are 2x as powerful", 500, 0, 25, 2),
-				new ArmyUpgrade('Men At Arms', "Now that the world is on fire, you have the audacity to come to me for help?", "Soldiers are 2x as powerful", 5000, 0, 100, 2),
-				new ArmyUpgrade('The Art of War', "If you know the enemy and know yourself, you need not fear the result of a hundred battles.", "Soldiers are 2x as powerful", 25000, 0, 250, 2),
-
 				//Archer Upgrades
-				new ArmyUpgrade('Heavy Crossbows', "These shots sure do pack a wallop!", "Archers are 2x as powerful", 100, 1, 5, 2),
-				]
+				new ArmyUpgrade('Heavy Crossbows', "These shots sure do pack a wallop!", "Archers are 2x as powerful", 100, 0, 5, 2), //name, desc, subDesc, goldC, ref, trigger, scale
+				new ArmyUpgrade('Serrated Arrowheads', "Hopefully, your enemies are spared the pain of removing them...because they'll be dead.", "Archers are 2x as powerful", 500, 0, 25, 2),
+				new ArmyUpgrade('Flaming Arrows', "Think Cheetos, except instead of burning your mouth, they burn your enemies alive.", "Archers are 2x as powerful", 5000, 0, 100, 2),
+				new ArmyUpgrade('Aerodynamic Arrows', "Your scientists have come up with more arrow-y arrows", "Archers are 2x as powerful", 25000, 0, 100, 2),
 
-var upgrades = []
+				//Soldier Upgrades
+				new ArmyUpgrade('Knowledge of the Blade', "When you were partying, I studied the blade...", "Soldiers are 2x as powerful", 100, 2, 5, 2), 
+				new ArmyUpgrade('Cultivation of Inner Strength', "While others pursued vanity, I cultivated inner strength", "Soldiers are 2x as powerful", 500, 2, 25, 2),
+				new ArmyUpgrade('Men At Arms', "Now that the world is on fire, you have the audacity to come to me for help?", "Soldiers are 2x as powerful", 5000, 2, 100, 2),
+				new ArmyUpgrade('The Art of War', "If you know the enemy and know yourself, you need not fear the result of a hundred battles.", "Soldiers are 2x as powerful", 25000, 2, 250, 2),
+
+				// Priest Upgrades
+				// new ArmyUpgrade('Romans 2:23', "For all have sinned and fall short of the glory of God.", 100, 8, 5, 2),
+				// new ArmyUpgrade('John 14:6', "I am the way and the truth and the life. No one comes to the father except through me.", 500, 8, 25, 2),
+				// new ArmyUpgrade('James 4:7', "Submit yourselves, then, to God. Resist the devil, and he will free you.", 5000, 8, 100, 2),
+				// new ArmyUpgrade('Colossians 3:23', "Whatever you do, work at it with all your heart, as working for the Lord, not for men.", 25000, 8, 500, 2)
+
+ 				];
+
+var upgrades = [];
 var upgradesCenter = elemUpgrades.length;
+
+var units = [];
+var unitsCenter = elements.length;
+
 
 for(let i=0; i<elemUpgrades.length+armyUpgrades.length; i++) {
 	if(i<elemUpgrades.length) {
@@ -306,32 +370,47 @@ for(let i=0; i<elemUpgrades.length+armyUpgrades.length; i++) {
 	} else upgrades[i]=armyUpgrades[i-elemUpgrades.length];
 }
 
-
-var unlocks =  [
-				new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", 0, 1),
+var unlocks =  [new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", 0, 1),
 				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", 1, 1),
 				new Unlock('Rock Hard', "...", "Purchased a Stonecutter", 2, 1),
 				new Unlock('Ironed Out', "Get those kinks settled once and for all!", "Purchased an Iron Miner", 3, 1),
-				new Unlock('Hoes Only', "You're one with the land", "Purchased a Farmer", 4, 1)
-
-				];
+				new Unlock('Hoes Only', "You're one with the land", "Purchased a Farmer", 4, 1)];
 
 
 for(let i = 0; i < elements.length; i++) {
 	elementsDisplay[i] = document.getElementById('e'+(i+1));
 }
 
-function update() {
+for(let i=0; i < army.length; i++) {
+	armyDisplay[i] = document.getElementById('a'+(i))
+}
 
-	showElements();
+function update() {
 	workerUpdate();
 	setCaches();
+	showElements();
 
 	for(let i = 0; i < elements.length; i++) {
 		elements[i].sendData();
+
+		for(let k = 0; k < document.getElementsByClassName("element"+i+"Quantity").length; k++) {
+			document.getElementsByClassName("element"+i+"Quantity")[k].innerHTML = elements[i].getQuantity();
+		}
+
+		document.getElementById("element"+i+"Buy").innerHTML = elements[i].getCost();
+		document.getElementById("element"+i+"Sell").innerHTML = elements[i].getSell();
+
 	}
+
 	for(let i = 0; i < army.length; i++) {
 		army[i].sendData();
+
+		for(let k = 0; k < document.getElementsByClassName("army"+i+"Quantity").length; k++) {
+			document.getElementsByClassName("army"+i+"Quantity")[k].innerHTML = army[i].getQuantity();
+		}
+
+		document.getElementById("army"+i+"Buy").innerHTML = army[i].getCost();
+		document.getElementById("army"+i+"Sell").innerHTML = army[i].getSell();
 	}
 
 	var repNames = [resources[0] + ": " + resAmounts[0], 
@@ -351,21 +430,12 @@ function update() {
 			materialRep[i][j].innerHTML = repNames[i];
 		}
 	}
-
-	// document.getElementById("").innerHTML = razMiddleName;
-
-	// playerStats[0] = elements[0].getQuantity(); //Str
-	// playerStats[1] = 0; //???
-	// playerStats[2] = 0; //???
-	// playerStats[3] = 0; //???
-	// playerStats[4] = 0;
-
-	// buttReplace();
 }	
 
 function workerUpdate() {
+
 	for(let i=0; i<updateRates.length; i++) {
-		GetRate[i]=0;
+		getRate[i] = 0;
 		for(let j=0; j<elements.length; j++) {
 			if(elements[j].produce[i] !== 0) {
 				let canAdd = true;
@@ -380,41 +450,45 @@ function workerUpdate() {
 						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
 							mult*=upgrades[l].scales[i];
 						}
-					}
-					GetRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult;
+					} getRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult;
 				}
 			}
 		}
 	}
 
 	for(let i=0; i<updateRates.length; i++) {
-		if(GetRate[i]!==SetRate[i]) {
-			SetRate[i] = GetRate[i];
+		if(getRate[i]!== setRate[i]) {
+			setRate[i] = setRate[i];
 			clearInterval(updateRates[i]);
-			updateRates[i] = setInterval(function(){resourcesUpdate(i);}, 1000/Math.abs(GetRate[i]));
+			updateRates[i] = setInterval(function(){resourcesUpdate(i);}, 1000/Math.abs(getRate[i]));
 		}
 	}
-	for(let i=0; i<GetRate.length; i++) {
-		document.getElementById('rate'+i).innerHTML = Math.round(GetRate[i]*100)/100;
+
+	for(let i=0; i< getRate.length; i++) {
+		document.getElementById('rate'+i).innerHTML = Math.round(getRate[i]*100)/100;
 	}
 }
 
 function armyUpdate() {
-	playerStats[0]=0;
-	for(let i=0; i<army.length; i++) {
-		let mult=1;
-		for(let j=upgradesCenter; j<upgrades.length; j++) {
-			if(upgrades[j].ref==i&&upgrades[j].unlocked) {
-				mult*=upgrades[j].scale;
+	for(let i=0; i<armyStats; i++) {
+		armyStats[i]=0;
+		for(let j=0; j<armyStats; j++) {
+			if(army[j].type==j) {
+				let mult=1;
+				for(let k=upgradesCenter; k<upgrades.length; k++) {
+					if(upgrades[k].ref==j&&upgrades[k].unlocked) {
+					mult*=upgrades[k].scale;
+					}
+				}
+				armyStats[i]+=army[j].power*mult;
 			}
 		}
-		playerStats[0]+=army[i].power*army[i].quantity;
 	}
 }
 
 function resourcesUpdate(i) {
-	if(GetRate[i]!== 0){
-		if(GetRate[i] > 0) {
+	if(getRate[i]!== 0){
+		if(getRate[i] > 0) {
 			resAmounts[i]++;
 		} else resAmounts[i]--;
 		update();
@@ -424,7 +498,13 @@ function resourcesUpdate(i) {
 function showElements() {
 	for(let i = 0; i < elements.length - 1; i++) {
 		if(elements[i].getQuantity() >= 5) {
-			elementsDisplay[i].style.display = 'table-row';
+			elementsDisplay[i+1].style.display = 'table-row';
+		}
+	}
+
+	for(let i = 0; i < army.length; i++) {
+		if(army[i].getQuantity() >= 5) {
+			armyDisplay[i+1].style.display = 'table-row';
 		}
 	}
 
@@ -514,18 +594,6 @@ function setCaches() {
 	}
 }
 
-
-for(let i = 0; i < elements.length; i++) {
-	document.getElementById(elements[i].getName()+'Buy').onclick = function() {elements[i].buy();}
-	document.getElementById(elements[i].getName()+'Sell').onclick = function() {elements[i].sell();}
-}
-
-for(let i = 0; i < army.length; i++) {
-	document.getElementById(army[i].getName()+'Buy').onclick = function() {army[i].buy();}
-	document.getElementById(army[i].getName()+'Sell').onclick = function() {army[i].sell();}
-}
-
-
 function openTab(thisClass, thisID, targetClass, targetID) {
 	var tabContent = document.getElementsByClassName(targetClass);
 
@@ -536,6 +604,104 @@ function openTab(thisClass, thisID, targetClass, targetID) {
 
 	document.getElementById(targetID).style.display = "block";
 	document.getElementById(thisID).className = thisClass + " active";
+}
+
+function createUnits() {
+	let elementsTable = document.getElementById("elements_table");
+	let armyTable = document.getElementById("army_table")
+
+	for(let i = 0; i < elements.length; i++) {
+		let firstRow = elementsTable.getElementsByTagName("tbody")[0];
+		let newRow = elementsTable.insertRow(elementsTable.rows.length);
+		for(let j = 0; j < 4; j++) {
+			let newCells = newRow.insertCell(j);	
+		}
+
+
+		newRow.setAttribute("class", "element_row");
+		newRow.setAttribute("id", "e"+i);
+
+		newRow.getElementsByTagName("td")[0].setAttribute("class", "element"+i);
+		newRow.getElementsByTagName("td")[1].setAttribute("class", "element"+i+"Quantity");
+		// newRow.getElementsByTagName("td")[2].setAttribute("class", "element"+i+"Desc");
+		newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='element"+i+"Buy' href='javascript:void(0);'></a>";
+		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='sell' id='element"+i+"Sell' href='javascript:void(0);'></a>";
+
+
+		elementsDisplay[i] = document.getElementById('e'+i);
+
+		for(let j = 0; j < document.getElementsByClassName("element"+i).length; j++) {
+			document.getElementsByClassName("element"+i)[j].innerHTML = elements[i].getFullName();
+		}
+
+
+		for(let k = 0; k < document.getElementsByClassName("element"+i+"Quantity").length; k++) {
+			document.getElementsByClassName("element"+i+"Quantity")[k].innerHTML = elements[i].getQuantity();
+		}
+
+		document.getElementById("element"+i+"Buy").innerHTML = elements[i].getCost();
+		document.getElementById("element"+i+"Sell").innerHTML = elements[i].getSell();
+
+		if(document.getElementById("element"+i+"Buy") != null)	{
+			document.getElementById("element"+i+"Buy").addEventListener('click', function() {
+				elements[i].buy(); 
+				update();
+			});
+		}
+
+		if(document.getElementById("element"+i+"Sell") != null)	{
+			document.getElementById("element"+i+"Sell").addEventListener('click', function() {
+				elements[i].sell(); 
+				update();
+			});
+		}
+
+	}
+
+	for(let i = 0; i < army.length; i++) {
+		let firstRow = armyTable.getElementsByTagName("tbody")[0];
+		let newRow = armyTable.insertRow(armyTable.rows.length);
+		for(let j = 0; j < 4; j++) {
+			let newCells = newRow.insertCell(j);	
+		}
+
+
+		newRow.setAttribute("class", "army_row");
+		newRow.setAttribute("id", "a"+i);
+
+		newRow.getElementsByTagName("td")[0].setAttribute("class", "army"+i);
+		newRow.getElementsByTagName("td")[1].setAttribute("class", "army"+i+"Quantity");
+		// newRow.getElementsByTagName("td")[2].setAttribute("class", "army"+i+"Desc");
+		newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='army"+i+"Buy' href='javascript:void(0);'></a>";
+		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='sell' id='army"+i+"Sell' href='javascript:void(0);'></a>";
+
+
+		armyDisplay[i] = document.getElementById('a'+i);
+
+		for(let j = 0; j < document.getElementsByClassName("army"+i).length; j++) {
+			document.getElementsByClassName("army"+i)[j].innerHTML = army[i].getFullName();
+		}
+
+
+		for(let k = 0; k < document.getElementsByClassName("army"+i+"Quantity").length; k++) {
+			document.getElementsByClassName("army"+i+"Quantity")[k].innerHTML = army[i].getQuantity();
+		}
+
+		document.getElementById("army"+i+"Buy").innerHTML = army[i].getCost();
+		document.getElementById("army"+i+"Sell").innerHTML = army[i].getSell();
+
+		if(document.getElementById("army"+i+"Buy") != null)	{
+			document.getElementById("army"+i+"Buy").addEventListener('click', function() {
+				army[i].buy(); 
+			});
+		}
+
+		if(document.getElementById("army"+i+"Sell") != null)	{
+			document.getElementById("army"+i+"Sell").addEventListener('click', function() {
+				army[i].sell(); 
+			});
+		}
+	}
 }
 
 
@@ -585,11 +751,31 @@ function createUpgrades() {
 	}
 }
 
+function addResource(index, amount) {
+	resAmounts[index] += amount;
+	update();
+}
+
+function attackEnemy()
+{
+	let diff = [];
+	let eStats = enemy.getStats();
+
+	// for(let i = 0; i < armyStats.length-1; i++)
+	// {
+	// 	diff[i] = (armyStats[i] * armyStats[5]) - (enemy.getStats()[i] * enemy.getStats()[5]);
+	// }
+
+	diff[0] = armyStats[0] - eStats[2];
+	diff[1] = armyStats[1] - eStats[3] + diff[0]*2;
+}
+
 /* Settings Nonsense */
 
 window.onload = function() {
 	windowLoaded = true;
 	setCaches();
 	createUpgrades();
+	createUnits();
 	update();
 }
