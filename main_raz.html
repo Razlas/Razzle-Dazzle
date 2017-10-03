@@ -12,31 +12,38 @@
 			<button class="tab_element active" id="resource_tab_button" onclick="openTab('tab_element', 'resource_tab_button', 'tab_content', 'resources')">Resources</button>
 			<button class="tab_element" id="army_tab_button" onclick="openTab('tab_element', 'army_tab_button', 'tab_content', 'army')">Army</button>
 			<button class="tab_element" id="shop_tab_button" onclick="openTab('tab_element', 'shop_tab_button', 'tab_content', 'shop')">Shop</button>
-			<button class="tab_element" id="settings_tab_button" onclick="openTab('tab_element', 'settings_tab_button', 'tab_content', 'settings')">Settings</button>
+			<button class="tab_element" id="upgrades_tab_button" onclick="openTab('tab_element', 'upgrades_tab_button', 'tab_content', 'upgrades')">Upgrades</button>
 		</div>
 
 		<div id="resources" class="tab_content default">
 			<h2>Resources</h2>
 
 			<div class="resources_tab">
+				<button class="rtab_element" id="rtab_element_crop" onclick="openTab('rtab_element', 'rtab_element_crop', 'resource_content', 'crop_production')">Crop</button>
 				<button class="rtab_element" id="rtab_element_gold" onclick="openTab('rtab_element', 'rtab_element_gold', 'resource_content', 'gold_production')">Gold</button>
 				<button class="rtab_element" id="rtab_element_wood" onclick="openTab('rtab_element', 'rtab_element_wood', 'resource_content', 'wood_production')">Wood</button>
 				<button class="rtab_element" id="rtab_element_stone" onclick="openTab('rtab_element', 'rtab_element_stone', 'resource_content', 'stone_production')">Stone</button>
 				<button class="rtab_element" id="rtab_element_iron" onclick="openTab('rtab_element', 'rtab_element_iron', 'resource_content', 'iron_production')">Iron</button>
-				<button class="rtab_element" id="rtab_element_crop" onclick="openTab('rtab_element', 'rtab_element_crop', 'resource_content', 'crop_production')">Crop</button>
 
-				<div class="resource_content default" id="gold_production">
+				<div class="resource_content default" id="crop_production">
+					<h3 class="producer_header">Crop Production</h3>
+					<p class="crop"></p>
+					<p>Profit: <span id="rate4"></span>/Second</p>
+					<p><span class="element0"></span>: <span class="element0Quantity"></span></p>
+				</div>
+
+				<div class="resource_content" id="gold_production">
 					<h3 class="producer_header"><b>Gold Production</b></h3>
 					<p class="gold"></p>
 					<p>Profit: <span id="rate0"></span>/Second</p>
-					<p>Gold Miners: <span class="GoldMinerQuantity"></span></p>
+					<p><span class="element1"></span>: <span class="element1Quantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="wood_production">
 					<h3 class="producer_header">Wood Production</h3>
 					<p class="wood"></p>
 					<p>Profit: <span id="rate1"></span>/Second</p>
-					<p><span class="LumberjackName"></span>: <span class="LumberjackQuantity"></span></p>
+					<p><span class="element2"></span>: <span class="element2Quantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="stone_production">
@@ -44,27 +51,19 @@
 					<p class="stone"></p>
 					<p>Profit: <span id="rate2"></span>/Second</p>
 
-					<p><span class="StonecutterName"></span>: <span class="StonecutterQuantity"></span></p>
+					<p><span class="element3"></span>: <span class="element3Quantity"></span></p>
 				</div>
 
 				<div class="resource_content" id="iron_production">
 					<h3 class="producer_header">Iron Production</h3>
 					<p class="metal"></p>
 					<p>Profit: <span id="rate3"></span>/Second</p>
-
-					<p><span class="IronMinerName"></span>: <span class="IronMinerQuantity"></span></p>
-				</div>
-
-				<div class="resource_content" id="crop_production">
-					<h3 class="producer_header">Crop Production</h3>
-					<p class="crop"></p>
-					<p>Profit: <span id="rate4"></span>/Second</p>
-					<p><span class="FarmerName"></span>: <span class="FarmerQuantity"></span></p>
+					<p><span class="element4"></span>: <span class="element4Quantity"></span></p>
 				</div>
 			</div>
 		</div>
 
-		<div id="army" class="tab_content">
+		<div id="upgrades" class="tab_content">
 			<h2>Upgrades</h2>
 			<table id="upgrades_table">
 				<tr>
@@ -106,15 +105,15 @@
 			</table>
 
 			<br>
-			<button onclick="addResource(0, 1)">Produce Gold</button>
-			<button onclick="addResource(1, 1)">Produce Wood</button>
-			<button onclick="addResource(2, 1)">Produce Stone</button>
-			<button onclick="addResource(3, 1)">Produce Iron</button>
-			<button onclick="addResource(4, 1)">Produce Crop</button>
+			<button id="r0">Produce Gold</button>
+			<button id="r1">Produce Wood</button>
+			<button id="r2">Produce Stone</button>
+			<button id="r3">Produce Iron</button>
+			<button id="r4">Produce Crop</button>
 
 		</div>
 
-		<div id="settings" class="tab_content">
+		<div id="army" class="tab_content">
 			<h2>Army</h2>
 	<!-- 		<h3>Gameplay</h3>
 			<h3>Misc</h3>
