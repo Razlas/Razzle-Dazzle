@@ -7,11 +7,12 @@
 	
 	<body>
 		<h1 id="raz_title"><u>The Life of Raz <span id="raz_middlename"></span> El</u></h1>
-		
+		<!-- To-Do: Fix this inline JS nonsense. -->
 		<div class="tab">
 			<button class="tab_element active" id="resource_tab_button" onclick="openTab('tab_element', 'resource_tab_button', 'tab_content', 'resources')">Resources</button>
-			<button class="tab_element" id="army_tab_button" onclick="openTab('tab_element', 'army_tab_button', 'tab_content', 'army')">Army</button>
 			<button class="tab_element" id="shop_tab_button" onclick="openTab('tab_element', 'shop_tab_button', 'tab_content', 'shop')">Shop</button>
+			<button class="tab_element" id="army_tab_button" onclick="openTab('tab_element', 'army_tab_button', 'tab_content', 'army')">Army</button>
+			<button class="tab_element" id="war_tab_button" onclick="openTab('tab_element', 'war_tab_button', 'tab_content', 'war')">War</button>
 			<button class="tab_element" id="upgrades_tab_button" onclick="openTab('tab_element', 'upgrades_tab_button', 'tab_content', 'upgrades')">Upgrades</button>
 		</div>
 
@@ -133,6 +134,13 @@
 					<th>Sell</th>
 				</tr>
 			</table>
+		</div>
+
+		<div id="war" class="tab_content">
+			<h2>War</h2> 
+			<p>You currently have: </p>
+			<ul id="army_troops">
+			</ul>
 		</div>
 
 

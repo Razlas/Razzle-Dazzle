@@ -90,7 +90,7 @@ div.tab_content {
 	height: 1000px;
 }
 
-#hiddenDiv, #hidden, .hidden, .element_row:not(#e0), .army_row:not(#a0), .upgrade_row:not(#default_row), .tab_content:not(.default), .resource_content:not(.default) {
+#hiddenDiv, #hidden, .hidden, .armyNode, .element_row:not(#e0), .army_row:not(#a0), .upgrade_row:not(#default_row), .tab_content:not(.default), .resource_content:not(.default) {
 	display: none;
 }
 
@@ -106,6 +106,10 @@ table#resource_table {
 #resource_table tr:nth-child(even), #upgrades_table tr:nth-child(even){
 	background-color: #EEEEEE;
 
+}
+
+li {
+	text-align: left;
 }
 
 h3.producer_header {

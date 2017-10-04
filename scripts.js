@@ -1,11 +1,33 @@
+/*A Word to the Nerds:
+	Types of Selectors:
+		getElementById:
+			This selector grabs an element by its HTML ID. The indicator for this is #, usually, and only 1 item can have the same id (unique)<
+		getElementsByClassName:
+			This selector grabs all elements matching matching a class name. As this would be multiple values, it returns an HTMLCollection.
+		getElementsByTagName: 
+			This selector grabs all elements matching a tag name, returns an HTMLCollection
+		querySelector:
+			Jack of all trades, master of none. qS was implemented with the selectors API, meaning it interfaces with CSS terminology, meaning that
+			CSS hierarchy applies. qS grabs the first element matching the defined selector, so if you did:
+			document.querySelector('div p .butts') it would return the first element with class butts descendent from a p inside a div. This also 
+			means you can use CSS selectors, ids, classes, attribute selectors (including things like :not()!!!!)
+		querySelectorAll: 
+			Jack of all trades, also a master of none but to be honest pretty masterful either way. Grabs all elements matching the defined selector, 
+			and returns a NodeList of the matching items (NOT an array, I think). This is static, which means it is re-calculated each time the func
+			is called, vs being live, which means it autoupdates. For us, this doesn't mean much, but it means something maybe later?????
+
+
+
+*/
 var elementsDisplay = [];
 var upgradesDisplay = [];
 var armyDisplay = [];
 
 // var upgradesAvailable = 0;
 
-var windowLoaded = false;
-var clearAll = true; 
+var windowLoaded = false; //Used with function setCaches()
+var troopsLoaded = false; //Used with function displayTroops()
+var clearAll = false; 
 
 //Names: Gold Miner, TestWorker2, TestWorker3, TestWorker4
 /*Upgrade Names:  
@@ -198,8 +220,7 @@ class Unit {
 		return dCost;
 	}
 
-	getDSell()
-	{
+	getDSell() {
 		let dCost = "";
 
 		for(let i = 0; i < resourcesL.length; i++) {
@@ -253,7 +274,7 @@ class Unlock {
 	getFullName() {return this.name;}
 	getName() {return this.name.replace(/\s/g, '');}
 	getDesc() {return this.desc;}
-	getSubDesc() {return this.subDesc}
+	getSubDesc() {return this.subDesc;}
 }
 
 class Upgrade extends Unlock {
@@ -305,13 +326,13 @@ var army 	 = [ //(name, desc, goldC, woodC, stoneC, metalC, cropC, power, type)
 				new ArmyUnit('Portable Cannon', 'temp', 50, 50, 50, 50, 25, 5, 0),
 
 				new ArmyUnit('Foot Soldier', 'temp', 10, 10, 10, 10, 5, 1, 1),
-				new ArmyUnit('Heavy Duty Soldiers', 'temp', 50, 50, 50, 50, 25, 3, 1),
+				new ArmyUnit('Heavy Duty Soldier', 'temp', 50, 50, 50, 50, 25, 3, 1),
 				
 				new ArmyUnit('Archer Tower', 'temp', 10, 10, 10, 10, 5, 1, 2),
 				new ArmyUnit('Heavy Duty Cannon', 'temp', 50, 50, 50, 50, 25, 3, 2),
 
-				new ArmyUnit('Barracks', 'temp', 10, 10, 10, 10, 5, 1, 3),
-				new ArmyUnit('Strong Walls', 'temp', 50, 50, 50, 50, 25, 3, 3),
+				new ArmyUnit('Barrack', 'temp', 10, 10, 10, 10, 5, 1, 3),
+				new ArmyUnit('Strong Wall', 'temp', 50, 50, 50, 50, 25, 3, 3),
 
 				new ArmyUnit('Priest', 'Blessed are the children of God', 10, 10, 10, 10, 5, 5, 4),
 				new ArmyUnit('Church', "church lmao", 50, 50, 50, 50, 25, 10, 4)
@@ -349,7 +370,12 @@ let elemUpgrades = [
 				new Upgrade('Reinforced Iron Picks', "Wait, didn't you already buy reinforced picks?", "Iron Miners are 2x as efficient!", 100, 4, 5, [1, 1, 1, 2, 1]),
 				new Upgrade('Super Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 500, 4, 25, [1, 1, 1, 2, 1]),
 				new Upgrade('Incredibly Reinforced Iron Picks', "Seriously, I could've sworn you bought this already...", "Iron Miners are 2x as efficient!", 5000, 4, 100, [1, 1, 1, 2, 1]),
-				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 4, 250, [1, 1, 1, 2, 1])
+				new Upgrade('Unfathomably Reinforced Iron Picks', "Deception is afoot...", "Iron Miners are 2x as efficient", 25000, 4, 250, [1, 1, 1, 2, 1]),
+
+				new Upgrade('Efficient eating', "How does this even work?", "Gold Miners eat half as much!", 1000, 1, 50, [1, 1, 1, 1, 0.5]),
+				new Upgrade('Less food-same work', "This doesn't make sense.", "Lumberjacks eat half as much!", 1000, 2, 50, [1, 1, 1, 1, 0.5]),
+				new Upgrade('Who needs food? We have pickaxes!', "What even is this anymore", "Stonecutters eat half as much!", 1000, 3, 50, [1, 1, 1, 1, 0.5]),
+				new Upgrade('An iron heavy diet', "I don't think that's healthy", "Iron Miners eat half as much!", 1000, 4, 50, [1, 1, 1, 1, 0.5])
 				];
 
 let armyUpgrades = [
@@ -432,6 +458,9 @@ function update() {
 			document.getElementsByClassName("army"+i+"Quantity")[k].innerHTML = army[i].getQuantity();
 		}
 
+		for(let j = 0; j < document.getElementsByClassName("army"+i).length; j++) {
+			document.getElementsByClassName("army"+i)[j].innerHTML = army[i].getFullName();
+		}
 		document.getElementById("army"+i+"Buy").innerHTML = army[i].getDCost();
 		document.getElementById("army"+i+"Sell").innerHTML = army[i].getDSell();
 	}
@@ -630,14 +659,11 @@ function openTab(thisClass, thisID, targetClass, targetID) {
 }
 
 function createUnits() {
-	/*This isn't working properly. I assume something to do with lack of pointers, as I'm creating a clone vs actually referencing the objects?
-	  Leaving commented until this is fixed. For now, reverting to 2x For Loops for functionality.*/
-
-	let tables = [document.getElementById("elements_table"), document.getElementById("army_table")];
-	let refer = [elements, army];
-	let display = [elementsDisplay, armyDisplay];
-	let letter = ["e", "a"];
-	let type = ["element", "army"];
+	let tables = [document.getElementById("elements_table"), document.getElementById("army_table"), document.getElementById("upgrades_table")];
+	let refer = [elements, army, upgrades];
+	let display = [elementsDisplay, armyDisplay, upgradesDisplay];
+	let letter = ["e", "a", "u"];
+	let type = ["element", "army", "upgrade"];
 
 	for(let t = 0; t < tables.length; t++) {
 		for(let i = 0; i < refer[t].length; i++) {
@@ -652,10 +678,16 @@ function createUnits() {
 
 			newRow.getElementsByTagName("td")[0].setAttribute("class", type[t]+i);
 			newRow.getElementsByTagName("td")[0].setAttribute("title", refer[t][i].getDesc())
+			 
+			if(t !== 2) { //Army, Elements
 			newRow.getElementsByTagName("td")[1].setAttribute("class", type[t]+i+"Quantity");
 			newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='"+type[t]+i+"Buy' href='javascript:void(0);'></a>";
 			newRow.getElementsByTagName("td")[3].innerHTML = "<a class='sell' id='"+type[t]+i+"Sell' href='javascript:void(0);'></a>";
-			
+			} else { //Upgrades
+			newRow.getElementsByTagName("td")[1].setAttribute("class", type[t]+i+"SubDesc")	
+			newRow.getElementsByTagName("td")[2].setAttribute("class", type[t]+i+"Desc")
+			newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='"+type[t]+i+"Buy' href='javascript:void(0);'></a>";
+			}
 
 			display[t][i] = document.getElementById(letter[t]+i);
 
@@ -663,66 +695,39 @@ function createUnits() {
 				document.getElementsByClassName(type[t]+i)[k].innerHTML = refer[t][i].getFullName();
 			}
 
-			for(let l = 0; l < document.getElementsByClassName(type[t]+i+"Quantity").length; l++) {
-				document.getElementsByClassName(type[t]+i+"Quantity")[l].innerHTML = refer[t][i].getQuantity();
+			if(document.getElementsByClassName(type[t]+i+"Quantity")) {
+				for(let l = 0; l < document.getElementsByClassName(type[t]+i+"Quantity").length; l++) {
+					document.getElementsByClassName(type[t]+i+"Quantity")[l].innerHTML = refer[t][i].getQuantity();
+				}
+			}
+
+			if(document.getElementsByClassName("upgrade"+i+"SubDesc")) {
+				for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
+					document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
+				}
+
+				for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
+					document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
+				}
 			}
 
 			document.getElementById(type[t]+i+"Buy").innerHTML = refer[t][i].getCost();
-			document.getElementById(type[t]+i+"Sell").innerHTML = refer[t][i].getSell();
+			
+			if(document.getElementById(type[t]+i+"Sell")) {
+				document.getElementById(type[t]+i+"Sell").innerHTML = refer[t][i].getSell();
+				document.getElementById(type[t]+i+"Sell").addEventListener('click', function() {
+					refer[t][i].sell();
+					if(t == 1) {
+						displayTroops();
+					}
+				});
+			}
 
 			document.getElementById(type[t]+i+"Buy").addEventListener('click', function() {
 				refer[t][i].buy();
-			});
-
-			document.getElementById(type[t]+i+"Sell").addEventListener('click', function() {
-				refer[t][i].sell();
-			});
-		}
-	}
-}
-
-
-function createUpgrades() {
-	let tableRef = document.getElementById("upgrades_table");
-
-	for(let i = 0; i < upgrades.length; i++) {
-		let firstRow = tableRef.getElementsByTagName("tbody")[0];
-		let newRow = tableRef.insertRow(tableRef.rows.length);
-		for(let j = 0; j < 4; j++) {
-			let newCells = newRow.insertCell(j);	
-		}
-
-
-		newRow.setAttribute("class", "upgrade_row");
-		newRow.setAttribute("id", "u"+i);
-
-		newRow.getElementsByTagName("td")[0].setAttribute("class", "upgrade"+i);
-		newRow.getElementsByTagName("td")[1].setAttribute("class", "upgrade"+i+"SubDesc");
-		newRow.getElementsByTagName("td")[2].setAttribute("class", "upgrade"+i+"Desc");
-		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
-
-		upgradesDisplay[i] = document.getElementById('u'+i);
-
-
-
-		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
-			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
-		}
-
-
-		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
-			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
-		}
-
-		for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
-			document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
-		}
-
-		document.getElementById("upgrade"+i+"Buy").innerHTML = upgrades[i].getCost();
-
-		if(document.getElementById("upgrade"+i+"Buy") != null)	{
-			document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
-				upgrades[i].buy(); 
+				if(t == 1) {
+					displayTroops();
+				}
 			});
 		}
 	}
@@ -734,6 +739,80 @@ function createUpgrades() {
 		});
 	}
 }
+
+
+function displayTroops() {
+	let troopList = document.getElementById("army_troops");
+
+	if(!troopsLoaded) {
+		for(let i = 0; i < army.length; i++) {
+			let node = document.createElement("li");
+			node.setAttribute('class', 'armyNode')
+			node.innerHTML = "<span class='army"+i+"Quantity'></span> <span class='army"+i+"'></span>";
+			if(army[i].getQuantity() != 1) {
+				node.innerHTML += 's'; 
+			}
+			
+			troopList.appendChild(node);
+		}
+
+		troopsLoaded = !troopsLoaded;
+	} else {
+		for(let i = 0; i < army.length; i++) {
+			if(army[i].getQuantity() > 0) {
+				troopList.getElementsByTagName('li')[i].style.display = "list-item";
+			} else if(army[i].getQuantity() == 0) {
+				troopList.getElementsByTagName('li')[i].style.display = "none";
+			}
+		}
+	}
+}
+
+// function createUpgrades() {
+// 	let tableRef = document.getElementById("upgrades_table");
+
+// 	for(let i = 0; i < upgrades.length; i++) {
+// 		let firstRow = tableRef.getElementsByTagName("tbody")[0];
+// 		let newRow = tableRef.insertRow(tableRef.rows.length);
+// 		for(let j = 0; j < 4; j++) {
+// 			let newCells = newRow.insertCell(j);	
+// 		}
+
+
+// 		newRow.setAttribute("class", "upgrade_row");
+// 		newRow.setAttribute("id", "u"+i);
+
+// 		newRow.getElementsByTagName("td")[0].setAttribute("class", "upgrade"+i);
+// 		newRow.getElementsByTagName("td")[1].setAttribute("class", "upgrade"+i+"SubDesc");
+// 		newRow.getElementsByTagName("td")[2].setAttribute("class", "upgrade"+i+"Desc");
+// 		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
+
+// 		upgradesDisplay[i] = document.getElementById('u'+i);
+
+
+
+// 		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
+// 			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
+// 		}
+
+
+// 		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
+// 			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
+// 		}
+
+// 		for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
+// 			document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
+// 		}
+
+// 		document.getElementById("upgrade"+i+"Buy").innerHTML = upgrades[i].getCost();
+
+// 		if(document.getElementById("upgrade"+i+"Buy") != null)	{
+// 			document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
+// 				upgrades[i].buy(); 
+// 			});
+// 		}
+// 	}
+// }
 
 function addResource(index, amount) {
 	console.log(index);
@@ -760,7 +839,7 @@ function attackEnemy()
 window.onload = function() {
 	windowLoaded = true;
 	setCaches();
-	createUpgrades();
 	createUnits();
+	displayTroops();
 	update();
 }
