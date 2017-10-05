@@ -90,7 +90,7 @@ div.tab_content {
 	height: 1000px;
 }
 
-#hiddenDiv, #hidden, .hidden, .armyNode, .element_row:not(#e0), .army_row:not(#a0), .upgrade_row:not(#default_row), .tab_content:not(.default), .resource_content:not(.default) {
+#hiddenDiv, #hidden, .hidden, .armyNode, #armySubmit, .element_row:not(#e0), .army_row:not(#a0), .upgrade_row:not(#default_row), .tab_content:not(.default), .resource_content:not(.default) {
 	display: none;
 }
 

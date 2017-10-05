@@ -22,6 +22,7 @@
 var elementsDisplay = [];
 var upgradesDisplay = [];
 var armyDisplay = [];
+var troopChoice = [];
 
 // var upgradesAvailable = 0;
 
@@ -52,12 +53,10 @@ var clickNum = [0, 0, 0, 0, 0];
 
 var buyAmount = 1;
 
-var land = 0;
+var land = 1;
 var maxBuy = false;
 
-var middleName = "";
-
-
+let troopList = document.getElementById('army_troops');
 
 // Cost scales: 5, 10, 15, 20
 
@@ -147,7 +146,7 @@ class Enemy  {
 	getStats() {return this.stats};
 }
 
-var enemy = new Enemy();
+var currentEnemy;
 
 class Unit {
 	constructor(name, desc, goldC, woodC, stoneC, metalC, cropC) {
@@ -239,6 +238,7 @@ class Unit {
 	getSell() {return this.sellCost;}
 	getDesc() {return this.desc;}
 	getQuantity() {return this.quantity;}
+	setQuantity(n) {this.quantity = n;}
 	getFullName() {return this.name;}
 	getName() {return this.name.replace(/\s/g, '');}
 }
@@ -258,6 +258,8 @@ class ArmyUnit extends Unit {
 		this.power = power;
 		this.type = type;
 	}
+
+	getType() {return this.type;}
 }
 
 class Unlock {
@@ -304,7 +306,7 @@ var elements = [
 				new Elem('Gold Miner', 'temp', 10, 0, 0, 0, 0, 1, 0, 0, 0, -0.2),
 				new Elem('Lumberjack', 'temp',  10, 10, 0, 0, 0, 0, 1, 0, 0, -0.2), 
 				new Elem('Stonecutter', 'temp',  10, 0, 10, 0, 0, 0, 0, 1, 0, -0.2), 
-				new Elem('Iron Miner', 'temp', 10, 0, 0, 0, 10, 0, 0, 0, 1, -0.2),
+				new Elem('Iron Miner', 'temp', 10, 0, 0, 10, 0, 0, 0, 0, 1, -0.2),
 				// new Elem('Blacksmith', 'temp')
 				//new Elem('Buffboi')
 				
@@ -401,23 +403,26 @@ let armyUpgrades = [
 
 let clickUpgrades = [
 				
-				// new Upgrade('Powerful Click', "boop", "bop", 1000, 0, ) //(name, desc, subDesc, goldC, ref, trigger) 
+				new Upgrade('Powerful Click', "boop", "bop", 1000, 0, 5, 2) //(name, desc, subDesc, goldC, ref, trigger) 
 
 				];
 					
 var upgrades = [];
-var upgradesCenter = elemUpgrades.length;
+var upgradesCenter = [elemUpgrades.length, elemUpgrades.length+armyUpgrades.length];
 var armyUpgradesCenter = elemUpgrades.length + armyUpgrades.length;
 
 var units = [];
 var unitsCenter = elements.length;
 
 
-for(let i=0; i<elemUpgrades.length+armyUpgrades.length; i++) {
+for(let i=0; i<elemUpgrades.length+armyUpgrades.length+clickUpgrades.length; i++) {
 	if(i<elemUpgrades.length) {
 		upgrades[i]=elemUpgrades[i];
-	} else upgrades[i]=armyUpgrades[i-elemUpgrades.length];
+	} else if(i<elemUpgrades.length+armyUpgrades.length) {
+		upgrades[i]=armyUpgrades[i-elemUpgrades.length]; 
+	} else upgrades[i]=clickUpgrades[i-(elemUpgrades.length+armyUpgrades.length)]
 }
+
 
 var unlocks =  [new Unlock('Knows Picking', "You can really get all up in those...rocks...", "Purchased a Gold Miner", 0, 1),
 				new Unlock('Getting Wood', "You know your way around a trunk! A tree trunk, that is...", "Purchased a Lumberjack", 1, 1),
@@ -436,6 +441,7 @@ for(let i=0; i < army.length; i++) {
 
 function update() {
 	workerUpdate();
+	clickUpdate();
 	setCaches();
 	showElements();
 
@@ -497,7 +503,7 @@ function workerUpdate() {
 				}
 				if(canAdd) {
 					let mult=1;
-					for(let l=0; l<upgradesCenter; l++) {
+					for(let l=0; l<upgradesCenter[0]; l++) {
 						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
 							mult*=upgrades[l].scale[i];
 						}
@@ -531,12 +537,12 @@ function resourcesUpdate(i) {
 }
 
 function armyUpdate() {
-	for(let i=0; i<armyStats; i++) {
+	for(let i=0; i<armyStats.length; i++) {
 		armyStats[i]=0;
-		for(let j=0; j<armyStats; j++) {
+		for(let j=0; j<army.length; j++) {
 			if(army[j].type==j) {
 				let mult=1;
-				for(let k=upgradesCenter; k<upgrades.length; k++) {
+				for(let k=upgradesCenter[0]; k<upgradesCenter[1]; k++) {
 					if(upgrades[k].ref==j&&upgrades[k].unlocked) {
 					mult*=upgrades[k].scale;
 					}
@@ -544,6 +550,18 @@ function armyUpdate() {
 				armyStats[i]+=army[j].power*mult;
 			}
 		}
+	}
+}
+
+function clickUpdate() {
+	for(let i=0; i<clickAmount.length; i++) {
+		clickAmount[i]=1;
+		for(let j=upgradesCenter[1]; j<upgrades.length; j++) {
+			if(upgrades[j].ref==i&&upgrades[j].unlocked) {
+				clickAmount[i]*=upgrades[j].scale;
+			}
+		}
+		// console.log(clickAmount);
 	}
 }
 
@@ -564,12 +582,18 @@ function showElements() {
 		if(upgradesDisplay[i]!==null){
 			if(upgrades[i].unlocked == true) {
 				upgradesDisplay[i].style.display = 'none';
-			} else if(i < upgradesCenter) {
+			} else if(i < upgradesCenter[0]) {
 				if(elements[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
 					upgradesDisplay[i].style.display="table-row";
 				}
-			} else if(army[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
-				upgradesDisplay[i].style.display="table-row";
+			} else if(i < upgradesCenter[1]) {
+				if(army[upgrades[i].ref].getQuantity() >= upgrades[i].trigger) {
+					upgradesDisplay[i].style.display="table-row";
+				}
+			} else if(i < upgrades.length) {
+				if(clickNum[upgrades[i].ref] >= upgrades[i].trigger) {
+					upgradesDisplay[i].style.display="table-row";
+				}
 			}
 		}
 	}
@@ -585,6 +609,7 @@ function setCaches() {
 		localStorage.removeItem("elements");
 		localStorage.removeItem("resources");
 		localStorage.removeItem("upgrades");
+		localStorage.removeItem("clicks");
 	}
 
 	if(!windowLoaded) {
@@ -601,6 +626,7 @@ function setCaches() {
 		}
 
 		localStorage.army = JSON.stringify(armyQuan);
+		localStorage.clicks = JSON.stringify(clickNum);
 		localStorage.elements = JSON.stringify(elemQuan);
 		localStorage.resources = JSON.stringify(resAmounts);
 		localStorage.upgrades = JSON.stringify(unlockedUpgrades);
@@ -629,6 +655,12 @@ function setCaches() {
 			localStorage.setItem("resources", JSON.stringify(resAmounts));
 		} else {
 			resAmounts = JSON.parse(localStorage.getItem("resources"));
+		}
+
+		if(!localStorage.getItem("clicks")) {
+			localStorage.setItem("clicks", JSON.stringify(clickNum));
+		} else {
+			clickNum = JSON.parse(localStorage.getItem("clicks"));
 		}
 
 		if(!localStorage.getItem("upgrades")) {
@@ -736,23 +768,25 @@ function createUnits() {
 		document.getElementById('r'+i).addEventListener('click', function() {
 			 addResource(i, clickAmount[i]);
 			 clickNum[i]++;
+			 console.log(clickNum);
 		});
 	}
 }
 
 
 function displayTroops() {
-	let troopList = document.getElementById("army_troops");
-
 	if(!troopsLoaded) {
 		for(let i = 0; i < army.length; i++) {
+			document.getElementById('armySubmit').addEventListener('click', selectTroops);
+			let currentQuantity = army[i].getQuantity();
 			let node = document.createElement("li");
 			node.setAttribute('class', 'armyNode')
-			node.innerHTML = "<span class='army"+i+"Quantity'></span> <span class='army"+i+"'></span>";
-			if(army[i].getQuantity() != 1) {
-				node.innerHTML += 's'; 
+			node.innerHTML = "<span class='army"+i+"Quantity'></span> <span class='army"+i+"'> </span>"
+			if(currentQuantity != 1) {
+				node.innerHTML += 's'; 			
 			}
-			
+
+			node.innerHTML += "<input type='number' class='armyInput' name='a"+i+"Q' min='0' max='"+currentQuantity+"'>";
 			troopList.appendChild(node);
 		}
 
@@ -761,77 +795,134 @@ function displayTroops() {
 		for(let i = 0; i < army.length; i++) {
 			if(army[i].getQuantity() > 0) {
 				troopList.getElementsByTagName('li')[i].style.display = "list-item";
+				troopList.getElementsByTagName('input')[i].style.display = "inline";
+				troopList.getElementsByTagName('input')[i].setAttribute('max', army[i].getQuantity());
+				document.getElementById('armySubmit').style.display = "block";
 			} else if(army[i].getQuantity() == 0) {
 				troopList.getElementsByTagName('li')[i].style.display = "none";
+				troopList.getElementsByTagName('input')[i].style.display = "none";
 			}
 		}
 	}
 }
 
-// function createUpgrades() {
-// 	let tableRef = document.getElementById("upgrades_table");
+function selectTroops() {
+	for(let i = 0; i < army.length; i++) {
+		if(Number(troopList.getElementsByTagName('input')[i].value) < army[i].getQuantity()) {
+			troopChoice[i] = troopList.getElementsByTagName('input')[i].value;
+		} else {
+			troopChoice[i] = army[i].getQuantity();
+		}
+	}
+	
+	console.log(troopChoice)
+}
 
-// 	for(let i = 0; i < upgrades.length; i++) {
-// 		let firstRow = tableRef.getElementsByTagName("tbody")[0];
-// 		let newRow = tableRef.insertRow(tableRef.rows.length);
-// 		for(let j = 0; j < 4; j++) {
-// 			let newCells = newRow.insertCell(j);	
-// 		}
-
-
-// 		newRow.setAttribute("class", "upgrade_row");
-// 		newRow.setAttribute("id", "u"+i);
-
-// 		newRow.getElementsByTagName("td")[0].setAttribute("class", "upgrade"+i);
-// 		newRow.getElementsByTagName("td")[1].setAttribute("class", "upgrade"+i+"SubDesc");
-// 		newRow.getElementsByTagName("td")[2].setAttribute("class", "upgrade"+i+"Desc");
-// 		newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='upgrade"+i+"Buy' href='javascript:void(0);'></a>";
-
-// 		upgradesDisplay[i] = document.getElementById('u'+i);
-
-
-
-// 		for(let j = 0; j < document.getElementsByClassName("upgrade"+i).length; j++) {
-// 			document.getElementsByClassName("upgrade"+i)[j].innerHTML = upgrades[i].getFullName();
-// 		}
-
-
-// 		for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
-// 			document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
-// 		}
-
-// 		for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
-// 			document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
-// 		}
-
-// 		document.getElementById("upgrade"+i+"Buy").innerHTML = upgrades[i].getCost();
-
-// 		if(document.getElementById("upgrade"+i+"Buy") != null)	{
-// 			document.getElementById("upgrade"+i+"Buy").addEventListener('click', function() {
-// 				upgrades[i].buy(); 
-// 			});
-// 		}
-// 	}
-// }
 
 function addResource(index, amount) {
-	console.log(index);
 	resAmounts[index] += amount;
 	update();
 }
 
 function attackEnemy()
 {
+	currentEnemy = new Enemy();
 	let diff = [];
-	let eStats = enemy.getStats();
+	let eStats = currentEnemy.getStats();
 
-	// for(let i = 0; i < armyStats.length-1; i++)
-	// {
-	// 	diff[i] = (armyStats[i] * armyStats[5]) - (enemy.getStats()[i] * enemy.getStats()[5]);
-	// }
+	diff[0] = (armyStats[4]/50) * (armyStats[0] - eStats[2]);
+	diff[1] = (armyStats[4]/50) * (armyStats[1] - eStats[3]);
+	diff[2] = diff[1] + diff[0]*2;
 
-	diff[0] = armyStats[0] - eStats[2];
-	diff[1] = armyStats[1] - eStats[3] + diff[0]*2;
+	if(diff[2] > 0)
+	{
+		land += diff[2];
+		
+		for(let i = 0; i < army.length; i++)
+		{
+			if(army[i].getType() === 0)
+			{
+				var m = Math.round(army[i].getQuantity() - ((diff[1]/elements[0].getQuantity())*army[i].getQuantity()));				
+				army[i].setQuantity(m);
+			}
+					
+			else if(army[i].getType() === 1) 
+			{
+				var n = Math.round(army[i].getQuantity() - ((diff[2]/elements[0].getQuantity())*army[i].getQuantity()));
+				army[1].setQuantity(n);
+			}
+
+			else if(army[i].getType() === 4)
+			{
+				var o = Math.round(army[i].getQuantity() - ((diff[2]/elements[0].getQuantity())*army[i].getQuantity()*2));
+		
+				if(o >= 0) army[i].setQuantity(o);
+				else army[i].setQuantity(0);
+			}
+		}
+	}
+
+	else
+	{
+		for(let i = 0; i < army.length; i++)
+		{
+			if(army[i].getType() === 0 || army[i].getType() === 1 || army[i].getType() === 4)
+			army[i].setQuantity(0);
+		}
+	}
+}
+
+function getAttacked()
+{
+	currentEnemy = new Enemy();
+	let diff = [];
+	let eStats = currentEnemy.getStats();
+
+	diff[0] = (armyStats[4]/50) * (armyStats[2] - eStats[0]);
+	diff[1] = (armyStats[4]/50) * (armyStats[3] - eStats[1]);
+	diff[2] = diff[1] + diff[0]*2;
+
+	if(diff[2] > 0)
+	{	
+		for(let i = 0; i < army.length; i++)
+		{
+			if(army[i].getType() === 2)
+			{
+				var m = Math.round(army[i].getQuantity() - ((diff[1]/elements[0].getQuantity())*army[i].getQuantity()));				
+				army[i].setQuantity(m);
+			}
+					
+			else if(army[i].getType() === 3) 
+			{
+				var n = Math.round(army[i].getQuantity() - ((diff[2]/elements[0].getQuantity())*army[i].getQuantity()));
+				army[1].setQuantity(n);
+			}
+
+			else if(army[i].getType() === 4)
+			{
+				var o = Math.round(army[i].getQuantity() - ((diff[2]/elements[0].getQuantity())*army[i].getQuantity()*2));
+		
+				if(o >= 0) army[i].setQuantity(o);
+				else army[i].setQuantity(0);
+			}
+		}
+	}
+
+	else
+	{
+		for(let i = 0; i < army.length; i++)
+		{
+			if(army[i].getType() === 2 || army[i].getType() === 3 || army[i].getType() === 4)
+			army[i].setQuantity(0);
+		}
+
+		for(let i = 0; i < elements.length; i++)
+		{
+			var n = elements[i].getQuantity - ((diff[2]/elements[0].getQuantity())*(elements[i].getQuantity()/10));
+
+			elements[i].setQuantity(n);
+		}
+	}
 }
 
 /* Settings Nonsense */
