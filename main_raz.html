@@ -6,20 +6,106 @@
 	</head>
 	
 	<body>
-		<h1 id="raz_title"><u>The Life of Raz <span id="raz_middlename"></span> El</u></h1>
+		<h1 id="raz_title">The Kingdom of Raz El</h1>
 		<!-- To-Do: Fix this inline JS nonsense. -->
 		<div class="tab">
-			<button class="tab_element active" id="resource_tab_button" onclick="openTab('tab_element', 'resource_tab_button', 'tab_content', 'resources')">Resources</button>
-			<button class="tab_element" id="shop_tab_button" onclick="openTab('tab_element', 'shop_tab_button', 'tab_content', 'shop')">Shop</button>
-			<button class="tab_element" id="army_tab_button" onclick="openTab('tab_element', 'army_tab_button', 'tab_content', 'army')">Army</button>
+			<button class="tab_element active" id="shop_tab_button" onclick="openTab('tab_element', 'shop_tab_button', 'tab_content', 'shop')">Shop</button>
 			<button class="tab_element" id="war_tab_button" onclick="openTab('tab_element', 'war_tab_button', 'tab_content', 'war')">War</button>
-			<button class="tab_element" id="upgrades_tab_button" onclick="openTab('tab_element', 'upgrades_tab_button', 'tab_content', 'upgrades')">Upgrades</button>
 		</div>
 
-		<div id="resources" class="tab_content default">
-			<h2>Resources</h2>
+		<div id="shop" class="tab_content default">
+			<h2>Shop</h2>
 
-			<div class="resources_tab">
+			<button class="shop_display" id="shop_display_resources" onclick="openTab('shop_display', 'shop_display_resources', 'shop_content', 'shop_content_resources')">Resources</button>
+			<button class="shop_display" id="shop_display_elements" onclick="openTab('shop_display', 'shop_display_elements', 'shop_content', 'shop_content_elements')">Workers</button>
+			<button class="shop_display" id="shop_display_army" onclick="openTab('shop_display', 'shop_display_army', 'shop_content', 'shop_content_army')">Army</button>
+			<button class="shop_display" id="shop_display_upgrades" onclick="openTab('shop_display', 'shop_display_army', 'shop_content', 'shop_content_upgrades')">Upgrades</button>
+			<hr>
+
+			<h3>Generate Resources</h3>
+
+			<button class="resource_produce_button" id="r0">Produce Gold</button>
+			<button class="resource_produce_button" id="r1">Produce Wood</button>
+			<button class="resource_produce_button" id="r2">Produce Stone</button>
+			<button class="resource_produce_button" id="r3">Produce Iron</button>
+			<button class="resource_produce_button" id="r4">Produce Crop</button>
+
+			<hr>
+
+			<table class="resource_table">
+				<tr><th><p class="resources"><b>Resources</b></p></th></tr>
+				<tr><td><p class="resources gold"></p></td></tr>
+				<tr><td><p class="resources wood"></p></td></tr>
+				<tr><td><p class="resources stone"></p></td></tr>
+				<tr><td><p class="resources iron"></p></td></tr>
+				<tr><td><p class="resources crop"></p></td></tr>
+			</table>
+
+
+			<div class="shop_content default" id="shop_content_elements">
+				<h3>Workers</h3>
+
+				<table id="elements_table">
+					<colgroup>
+						<col width="125">
+						<col width="60">
+						<col width="100">
+						<col width="150">
+						<col width="150">
+					</colgroup>
+					<tr>
+						<th>Name</th>
+						<th>#</th>
+						<th>Buy</th>
+						<th>Sell</th>
+					</tr>
+				</table>
+
+				<br>
+			</div>
+
+			<div class="shop_content" id="shop_content_army">
+				<h3>Army</h3>
+
+				<table id="army_table">
+					<colgroup>
+						<col width="200">
+						<col width="60">
+						<col width="100">
+						<col width="150">
+						<col width="150">
+					</colgroup>
+					<tr>
+						<th>Name</th>
+						<th>#</th>
+						<th>Buy</th>
+						<th>Sell</th>
+					</tr>
+				</table>
+			</div>
+
+			<div class="shop_content" id="shop_content_upgrades">
+				<h3>Upgrades</h3>
+				<p id='no_upgrades_text'></p>
+				<table id="upgrades_table">
+					<colgroup>
+						<col width="100">
+						<col width="100">
+						<col width="300">
+					</colgroup>
+
+					<tr>
+						<th>Upgrade</th>
+						<th>Effect</th>
+						<th>Description</th>
+						<th>Buy</th>
+					</tr>
+				</table>
+			</div>
+
+			<div class="shop_content" id="shop_content_resources">
+				<h3>Resources</h3>
+
 				<button class="rtab_element" id="rtab_element_crop" onclick="openTab('rtab_element', 'rtab_element_crop', 'resource_content', 'crop_production')">Crop</button>
 				<button class="rtab_element" id="rtab_element_gold" onclick="openTab('rtab_element', 'rtab_element_gold', 'resource_content', 'gold_production')">Gold</button>
 				<button class="rtab_element" id="rtab_element_wood" onclick="openTab('rtab_element', 'rtab_element_wood', 'resource_content', 'wood_production')">Wood</button>
@@ -57,94 +143,37 @@
 
 				<div class="resource_content" id="iron_production">
 					<h3 class="producer_header">Iron Production</h3>
-					<p class="metal"></p>
+					<p class="iron"></p>
 					<p>Profit: <span id="rate3"></span>/Second</p>
 					<p><span class="element4"></span>: <span class="element4Quantity"></span></p>
 				</div>
 			</div>
 		</div>
 
-		<div id="upgrades" class="tab_content">
-			<h2>Upgrades</h2>
-			<table id="upgrades_table">
-				<tr>
-					<th>Upgrade</th>
-					<th>Effect</th>
-					<th>Description</th>
-					<th>Buy</th>
-				</tr>
-
-			</table>
-		</div>
-
-		<div id="shop" class="tab_content">
-			<h2>Shop</h2>
-
-			<table id="resource_table">
-				<tr><th><p class="resources" id="rhead"><b>Resources</b></p></th></tr>
-				<tr><td><p class="resources gold"></p></td></tr>
-				<tr><td><p class="resources wood"></p></td></tr>
-				<tr><td><p class="resources stone"></p></td></tr>
-				<tr><td><p class="resources metal"></p></td></tr>
-				<tr><td><p class="resources crop"></p></td></tr>
-			</table>
-
-			<table id="elements_table">
-				<colgroup>
-					<col width="125">
-					<col width="60">
-					<col width="100">
-					<col width="150">
-					<col width="150">
-				</colgroup>
-				<tr>
-					<th>Name</th>
-					<th>#</th>
-					<th>Buy</th>
-					<th>Sell</th>
-				</tr>
-			</table>
-
-			<br>
-			<button id="r0">Produce Gold</button>
-			<button id="r1">Produce Wood</button>
-			<button id="r2">Produce Stone</button>
-			<button id="r3">Produce Iron</button>
-			<button id="r4">Produce Crop</button>
-
-		</div>
-
-		<div id="army" class="tab_content">
-			<h2>Army</h2>
-	<!-- 		<h3>Gameplay</h3>
-			<h3>Misc</h3>
-			<h3>Experimental</h3> -->
-			<table id="army_table">
-				<colgroup>
-					<col width="200">
-					<col width="60">
-					<col width="100">
-					<col width="150">
-					<col width="150">
-				</colgroup>
-				<tr>
-					<th>Name</th>
-					<th>#</th>
-					<th>Buy</th>
-					<th>Sell</th>
-				</tr>
-			</table>
-		</div>
-
 		<div id="war" class="tab_content">
-			<h2>War</h2> 
-			<p>You currently have: </p>
+			<h2>Current Troops</h2> 
+			<p id="war_desc">You don't currently have any troops.</p>
+
 			<form>
 				<ul id="army_troops">
 				</ul>
 			</form>
 
-			<button id="armySubmit">Submit Troop</button>
+			<button id="armySubmit">Select Troops</button>
+
+			<hr>
+			<div id="selected">
+				<h3>Selected Army</h3>
+
+				<ul id="selected_troops">
+				</ul>
+
+				<p id=army_stats></p>
+
+				<hr>
+
+				<button id="beginWar">Begin War</button>
+			</div>
 		</div>
 
 		<script src="scripts.js"> </script>
