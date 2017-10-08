@@ -46,9 +46,10 @@ var getRate = [0, 0, 0, 0, 0];
 var resAmounts = [10000, 10000, 10000, 10000, 10000]; //Gold, Wood, Stone, Iron, Crop
 var armyStats = [0, 0, 0, 0, 1]; //Ranged Offense, Melee Offense, Ranged Defense, Melee Defense, Luck
 //Luck is between 0-100, where 0 is the worst luck possible and 100 is very good luck
-var updateRates = [0, 0, 0, 0, 0];
 var clickAmount = [1, 1, 1, 1, 1];
 var clickNum = [0, 0, 0, 0, 0];
+
+var updates = setInterval(resourcesUpdate, 20);
 
 var buyAmount = 1;
 
@@ -405,38 +406,39 @@ function update() {
 	clickUpdate();
 	setCaches();
 	showElements();
+	displayTroops();
 
 	for(let i = 0; i < elements.length; i++) {
 		elements[i].sendData();
 
-		for(let k = 0; k < document.getElementsByClassName("element"+i+"Quantity").length; k++) {
-			document.getElementsByClassName("element"+i+"Quantity")[k].innerHTML = elements[i].getQuantity();
+		for(let k = 0; k < document.getElementsByClassName(`element${i}Quantity`).length; k++) {
+			document.getElementsByClassName(`element${i}Quantity`)[k].innerHTML = elements[i].getQuantity();
 		}
 
-		document.getElementById("element"+i+"Buy").innerHTML = elements[i].getDCost();
-		document.getElementById("element"+i+"Sell").innerHTML = elements[i].getDSell();
-
+		document.getElementById(`element${i}Buy`).innerHTML = elements[i].getDCost();
+		document.getElementById(`element${i}Sell`).innerHTML = elements[i].getDSell();
 	}
 
 	for(let i = 0; i < army.length; i++) {
 		army[i].sendData();
 
-		for(let k = 0; k < document.getElementsByClassName("army"+i+"Quantity").length; k++) {
-			document.getElementsByClassName("army"+i+"Quantity")[k].innerHTML = army[i].getQuantity();
+		for(let k = 0; k < document.getElementsByClassName(`army${i}Quantity`).length; k++) {
+			document.getElementsByClassName(`army${i}Quantity`)[k].innerHTML = army[i].getQuantity();
 		}
 
-		for(let j = 0; j < document.getElementsByClassName("army"+i).length; j++) {
-			document.getElementsByClassName("army"+i)[j].innerHTML = army[i].getFullName();
+		for(let j = 0; j < document.getElementsByClassName(`army${i}`).length; j++) {
+			document.getElementsByClassName(`army${i}`)[j].innerHTML = army[i].getFullName();
 		}
-		document.getElementById("army"+i+"Buy").innerHTML = army[i].getDCost();
-		document.getElementById("army"+i+"Sell").innerHTML = army[i].getDSell();
+
+		document.getElementById(`army${i}Buy`).innerHTML = army[i].getDCost();
+		document.getElementById(`army${i}Sell`).innerHTML = army[i].getDSell();
 	}
 
-	var repNames = [resources[0] + ": " + resAmounts[0], 
-					resources[1] + ": " + resAmounts[1],
-					resources[2] + ": " + resAmounts[2],
-					resources[3] + ": " + resAmounts[3],
-					resources[4] + ": " + resAmounts[4]];
+	var repNames = [`${resources[0]}: ${Math.floor(resAmounts[0])}`, 
+					`${resources[1]}: ${Math.floor(resAmounts[1])}`,
+					`${resources[2]}: ${Math.floor(resAmounts[2])}`,
+					`${resources[3]}: ${Math.floor(resAmounts[3])}`,
+					`${resources[4]}: ${Math.floor(resAmounts[4])}`];
 
 	var materialRep = [document.getElementsByClassName('gold'), 
 						document.getElementsByClassName('wood'), 
@@ -452,34 +454,38 @@ function update() {
 }	
 
 function workerUpdate() {
-	for(let i=0; i<updateRates.length; i++) {
+	for(let i=0; i<getRate.length; i++) {
 		getRate[i] = 0;
 		for(let j=0; j<elements.length; j++) {
 			if(elements[j].produce[i] !== 0) {
-				let canAdd = true;
-				for(let k=0; k<elements[j].produce.length; k++) {
-					if(elements[j].produce[k]<0 && resAmounts[k] <= 0) {
-						canAdd=false;
+				let mult=1;
+				for(let l=0; l<upgradesCenter[0]; l++) {
+					if(upgrades[l].ref==j&&upgrades[l].unlocked) {
+						mult*=upgrades[l].scale[i];
 					}
-				}
-				if(canAdd) {
-					let mult=1;
-					for(let l=0; l<upgradesCenter[0]; l++) {
-						if(upgrades[l].ref==j&&upgrades[l].unlocked) {
-							mult*=upgrades[l].scale[i];
-						}
-					} 
-					getRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult*land;
-				}
+				} 
+				getRate[i]+=elements[j].produce[i]*elements[j].getQuantity()*mult*land;
 			}
 		}
 	}
 
-	for(let i=0; i<updateRates.length; i++) {
-		if(getRate[i]!== setRate[i]) {
-			setRate[i] = getRate[i];
-			clearInterval(updateRates[i]);
-			updateRates[i] = setInterval(function(){resourcesUpdate(i);}, 1000/Math.abs(getRate[i]));
+	for(let i=0; i<getRate.length; i++) {
+		if(resAmounts[i]+getRate[i]/50<0) {
+			for(let j=0; j<elements.length; j++) {
+				if(elements[j].produce[i]<0) {
+					for(let k=0; k<elements[j].produce.length; k++) {
+						if(elements[j].produce[k]!==0) {
+							let mult=1;
+							for(let l=0; l<upgradesCenter[0]; l++) {
+								if(upgrades[l].ref==j&&upgrades[l].unlocked) {
+									mult*=upgrades[l].scale[i];
+								}
+							}
+							getRate[k]-=elements[j].produce[k]*elements[j].getQuantity()*mult*land;
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -488,11 +494,9 @@ function workerUpdate() {
 	}
 }
 
-function resourcesUpdate(i) {
-	if(getRate[i]!== 0){
-		if(getRate[i] > 0) {
-			resAmounts[i]++;
-		} else resAmounts[i]--;
+function resourcesUpdate() {
+	for(let i=0; i<resAmounts.length; i++) {
+		resAmounts[i]+=getRate[i]/50;
 		update();
 	}
 }
@@ -675,13 +679,13 @@ function createUnits() {
 			 
 			if(t !== 2) { //Army, Elements
 			newRow.getElementsByTagName("td")[1].setAttribute("class", type[t]+i+"Quantity");
-			newRow.getElementsByTagName("td")[2].innerHTML = "<a class='buy' id='"+type[t]+i+"Buy' href='javascript:void(0);'></a>";
-			newRow.getElementsByTagName("td")[3].innerHTML = "<a class='sell' id='"+type[t]+i+"Sell' href='javascript:void(0);'></a>";
+			newRow.getElementsByTagName("td")[2].innerHTML = `<a class='buy' id='${type[t]}${i}Buy' href='javascript:void(0);'></a>`;
+			newRow.getElementsByTagName("td")[3].innerHTML = `<a class='sell' id='${type[t]}${i}Sell' href='javascript:void(0);'></a>`;
 			} 
 			else { //Upgrades
 			newRow.getElementsByTagName("td")[1].setAttribute("class", type[t]+i+"SubDesc")	
 			newRow.getElementsByTagName("td")[2].setAttribute("class", type[t]+i+"Desc")
-			newRow.getElementsByTagName("td")[3].innerHTML = "<a class='buy' id='"+type[t]+i+"Buy' href='javascript:void(0);'></a>";
+			newRow.getElementsByTagName("td")[3].innerHTML = `<a class='buy' id='${type[t]}${i}Buy' href='javascript:void(0);'></a>`;
 			}
 
 			display[t][i] = document.getElementById(letter[t]+i);
@@ -696,13 +700,13 @@ function createUnits() {
 				}
 			}
 
-			if(document.getElementsByClassName("upgrade"+i+"SubDesc")) {
-				for(let k = 0; k < document.getElementsByClassName("upgrade"+i+"SubDesc").length; k++) {
-					document.getElementsByClassName("upgrade"+i+"SubDesc")[k].innerHTML = upgrades[i].getSubDesc();
+			if(document.getElementsByClassName(`upgrade${i}SubDesc`)) {
+				for(let k = 0; k < document.getElementsByClassName(`upgrade${i}SubDesc`).length; k++) {
+					document.getElementsByClassName(`upgrade${i}SubDesc`)[k].innerHTML = upgrades[i].getSubDesc();
 				}
 
-				for(let l = 0; l < document.getElementsByClassName("upgrade"+i+"Desc").length; l++) {
-					document.getElementsByClassName("upgrade"+i+"Desc")[l].innerHTML = upgrades[i].getDesc();
+				for(let l = 0; l < document.getElementsByClassName(`upgrade${i}Desc`).length; l++) {
+					document.getElementsByClassName(`upgrade${i}Desc`)[l].innerHTML = upgrades[i].getDesc();
 				}
 			}
 
@@ -744,21 +748,22 @@ function displayTroops() {
 			let currentQuantity = army[i].getQuantity();
 			let node = document.createElement("li");
 			node.setAttribute('class', 'armyNode')
-			node.innerHTML = "<span class='army"+i+"Quantity'></span> <span id='army"+i+"Name'> </span> <input type='number' class='armyInput' id='a"+i+"Q' name='a"+i+"Q' min='0' max='"+currentQuantity+"'>";
+			node.innerHTML = `<span class='army${i}Quantity'></span> <span id='army${i}Name'></span> <input type='number' class='armyInput' id='a${i}Q' name='a${i}Q' min='0' max='${currentQuantity}'>`;
 			troopList.appendChild(node);
-			document.getElementById('a'+i+'Q').addEventListener('change', function(){
+			document.getElementById(`a${i}Q`).addEventListener('change', function(){
 				if(this.value > army[i].getQuantity()) {this.value = army[i].getQuantity();}
 				if(this.value < 0) {this.value = 0;}
 			});
 
 			document.getElementById('beginWar').addEventListener('click', function() {
 				army[i].setQuantity(army[i].getQuantity() - troopChoice[i]);
+				currentEnemy = new Enemy();
 				attackEnemy();
 			});
 
 			let selectNode = document.createElement("li");
 			selectNode.setAttribute('class', 'selectNode');
-			selectNode.innerHTML = "<span id='army"+i+"SelectedQuantity'></span> <span id='army"+i+"Selected'></span> (<span id='army"+i+"SelectedStats'></span>)";
+			selectNode.innerHTML = `<span id='army${i}SelectedQuantity'></span> <span id='army${i}Selected'></span> (<span id='army${i}SelectedStats'></span>)`;
 
 			selectedTroops.appendChild(selectNode);
 		}
@@ -767,28 +772,30 @@ function displayTroops() {
 		displayTroops();
 	} else {
 		for(let i = 0; i < army.length; i++) {
-			if(army[i].getQuantity() > 0) {
-				areTroops = true;
-				document.getElementById('army'+i+'Name').innerHTML = army[i].getFullName();
-				document.getElementById('army'+i+'Selected').innerHTML = army[i].getFullName();
-				if(army[i].getQuantity() > 1) {
-					document.getElementById('army'+i+'Name').innerHTML += 's';
-					document.getElementById('army'+i+'Selected').innerHTML += 's';
+			if(army[i].type == 0 || army[i].type == 1 || army[i].type == 4) {
+				if(army[i].getQuantity() > 0) {
+					areTroops = true;
+					document.getElementById('army'+i+'Name').innerHTML = army[i].getFullName();
+					document.getElementById('army'+i+'Selected').innerHTML = army[i].getFullName();
+					if(army[i].getQuantity() > 1) {
+						document.getElementById('army'+i+'Name').innerHTML += 's';
+						document.getElementById('army'+i+'Selected').innerHTML += 's';
+					}
+					troopList.getElementsByTagName('li')[i].style.display = "list-item";
+					troopList.getElementsByTagName('input')[i].style.display = "inline";
+					troopList.getElementsByTagName('input')[i].setAttribute('max', army[i].getQuantity());
+					document.getElementById('armySubmit').style.display = "block";
+				} else if(army[i].getQuantity() == 0) {
+					troopList.getElementsByTagName('li')[i].style.display = "none";
+					troopList.getElementsByTagName('input')[i].style.display = "none";
 				}
-				troopList.getElementsByTagName('li')[i].style.display = "list-item";
-				troopList.getElementsByTagName('input')[i].style.display = "inline";
-				troopList.getElementsByTagName('input')[i].setAttribute('max', army[i].getQuantity());
-				document.getElementById('armySubmit').style.display = "block";
-			} else if(army[i].getQuantity() == 0) {
-				troopList.getElementsByTagName('li')[i].style.display = "none";
-				troopList.getElementsByTagName('input')[i].style.display = "none";
 			}
 		}
 	}
 
-	// areTroops ? //Ternary is just if:else
-	// 	document.getElementById('war_desc').innerHTML = "You currently have:" :
-	// 	document.getElementById('war_desc').innerHTML = "You currently have no troops.";
+	areTroops ? //Ternary is just if:else
+		document.getElementById('war_desc').innerHTML = "You currently have:" :
+		document.getElementById('war_desc').innerHTML = "You currently have no troops.";
 }
 
 function selectTroops() {
@@ -817,12 +824,12 @@ function selectTroops() {
 				mult*=upgrades[j].scale;
 			}
 		}
-
+	
 		document.getElementById('army'+i+'SelectedStats').innerHTML = army[i].power*troopChoice[i]*mult + " " + armyTypes[army[i].type];
 	}
 
+	document.getElementById('army_stats').innerHTML = `Stats: ${armyStats[0]} ${armyTypes[0]}, ${armyStats[1]} ${armyTypes[1]}, ${armyStats[2]} ${armyTypes[2]}, ${armyStats[3]} ${armyTypes[3]}, ${armyStats[4]} ${armyTypes[4]}`;
 	update();
-	document.getElementById('army_stats').innerHTML = "Stats: " + armyStats[0] + " " + armyTypes[0] + ", " + armyStats[1] + " " + armyTypes[1] + ", " + armyStats[2] + " " + armyTypes[2] + ", " + armyStats[3] + " " + armyTypes[3] + ", " + armyStats[4] + " " + armyTypes[4];
 }
 
 
@@ -857,14 +864,16 @@ class Enemy  {
 	getStats() {return this.stats};
 }
 
-function attackEnemy()
-{
-  	currentEnemy = new Enemy();
+function attackEnemy() {
+	for(let i = 0; i < army.length; i++) {
+		army[i].setQuantity(army[i].getQuantity() - troopChoice[i]);
+	}
+
   	let diff = [];
   	let eStats = currentEnemy.getStats();
 	
-  	console.log(armyStats);
-  	console.log(eStats)
+  	// console.log(armyStats);
+  	// console.log(eStats);
 	
   	diff[0] = (armyStats[0] - eStats[2]);
   	diff[1] = (armyStats[1] - eStats[3]);
@@ -873,32 +882,28 @@ function attackEnemy()
   	console.log(diff);
 	
   	if (diff[2] > 0)
-  	{
-  		var z = diff[2].toString.length;
-		
+  	{	
   		land += diff[2]/100;
   		for (let i = 0; i < army.length; i++)
   		{
   			if (army[i].getType() === 0)
   		    {
-  		      var m = Math.round(troopChoice[i] - (20*z/diff[2])*troopChoice[i]);
-  		      troopChoice[i] = m;
+  		      	troopChoice[i] = Math.round(troopChoice[i] - (20/diff[2])*troopChoice[i]);;
   		    } 
   		    else if (army[i].getType() === 1) 
   		    {
-  		      var n = Math.round(troopChoice[i] - (20*z/diff[2])*troopChoice[i]);
-  		      troopChoice[i] = n;
+  		      	troopChoice[i] = Math.round(troopChoice[i] - (20/diff[2])*troopChoice[i]);;
   		    } 
   		    else if (army[i].getType() === 4)
   		    {
-  		      var o = Math.round(troopChoice[i] - (20*z/diff[2])*troopChoice[i]*2);
-  		      if (o >= 0) troopChoice[i] = o;
-  		      else troopChoice[i] = 0;
+  		    	let temp = Math.round(troopChoice[i] - (20/diff[2])*troopChoice[i]*2);
+  		    	if (temp >= 0) {troopChoice[i] = temp;}
+  		      	else troopChoice[i] = 0;
   		    }
   		}
   	} 
   	else
-  	{
+  	{ 
   	  	for (let i = 0; i < army.length; i++)
   	  	{
   	    	if (army[i].getType() === 0 || army[i].getType() === 1 || army[i].getType() === 4) troopChoice[i] = 0;
@@ -907,67 +912,76 @@ function attackEnemy()
 	
   	for(let i = 0; i < army.length; i++)
   	{
-  		var n = army[i].getQuantity() + troopChoice[i];
+  		let n = army[i].getQuantity() + troopChoice[i];
 	
   		army[i].setQuantity(n);
   	}
 	
   	console.log(troopChoice);
+
+  	for (let i = 0; i < army.length; i++)
+  	{
+  		troopChoice[i] = 0;
+  	}
+
+  	update();
 }
 
 function getAttacked()
 {
-  currentEnemy = new Enemy();
-  let diff = [];
-  let eStats = currentEnemy.getStats();
+	let diff = [];
+	let eStats = currentEnemy.getStats();
+	
+	diff[0] = armyStats[2] - eStats[0];
+	diff[1] = armyStats[3] - eStats[1];
+	diff[2] = diff[1] + diff[0]*2;
+	
+	if (diff[2] > 0) 
+	{
+		for (let i = 0; i < army.length; i++) {
+			if (army[i].getType() === 2) {
+				troopChoice[i] = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]));;
+			} 
+			else if (army[i].getType() === 3) {
+				troopChoice[i] = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]));
+			} 
+			else if (army[i].getType() === 4)
+			{
+				let temp = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]*2));
+				if (temp >= 0) troopChoice[i] = temp;
+				else troopChoice[i] = 0;
+			}
+		}
+	} 
+	else
+	{
+		for (let i = 0; i < army.length; i++)
+		{
+			if (army[i].getType() === 2 || army[i].getType() === 3 || army[i].getType() === 4)
+			troopChoice[i] = 0;
+		}
+		
+		for (let i = 0; i < elements.length; i++)
+		{
+			let n = elements[i].getQuantity - ((diff[2]/elements[0].getQuantity())*(elements[i].getQuantity()/10));
+			
+			elements[i].setQuantity(n);
+		}
+	}
 
-  diff[0] = armyStats[2] - eStats[0];
-  diff[1] = armyStats[3] - eStats[1];
-  diff[2] = diff[1] + diff[0]*2;
-
-  if (diff[2] > 0)
-  {
-    for (let i = 0; i < army.length; i++)
-    {
-      if (army[i].getType() === 2) {
-        var m = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]));
-        troopChoice[i] = m;
-      } 
-      else if (army[i].getType() === 3) 
-      {
-        var n = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]));
-        troopChoice[i] = n;
-      } 
-      else if (army[i].getType() === 4)
-      {
-        var o = Math.round(troopChoice[i] - (diff[2]/(elements[0].getQuantity())*troopChoice[i]*2));
-        if (o >= 0) troopChoice[i] = o;
-        else troopChoice[i] = 0;
-      }
-    }
-  } 
-
-  else
-  {
-    for (let i = 0; i < army.length; i++)
-    {
-      if (army[i].getType() === 2 || army[i].getType() === 3 || army[i].getType() === 4)
-        troopChoice[i] = 0;
-    }
-
-    for (let i = 0; i < elements.length; i++)
-    {
-      var n = elements[i].getQuantity - ((diff[2]/elements[0].getQuantity())*(elements[i].getQuantity()/10));
-
-      elements[i].setQuantity(n);
-    }
-  }
-
-  for(let i = 0; i < troopChoice.length; i++)
-  {
-  	army[i].setQuantity(army[i].getQuantity() + troopChoice[i]);
-  }
+	for(let i = 0; i < troopChoice.length; i++)
+	{
+		army[i].setQuantity(army[i].getQuantity() + troopChoice[i]);
+	}
 }
+
+document.getElementById('clear_progress_button').addEventListener('click', function() {
+	localStorage.removeItem('resources');
+	localStorage.removeItem('army');
+	localStorage.removeItem('elements');
+	localStorage.removeItem('upgrades');
+	location.reload();
+})
 
 window.onload = function() {
 	windowLoaded = true;
